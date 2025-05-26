@@ -39,6 +39,7 @@ export class ListingsService {
     const dtos = await Promise.all(
       docs.documents.map(async (doc) => {
         return new ListingDto(
+          doc['id'],
           doc['title'],
           doc['description'],
           doc['pictures'],

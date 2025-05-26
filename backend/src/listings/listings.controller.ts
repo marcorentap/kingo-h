@@ -17,6 +17,7 @@ import { TokenGuard } from 'src/token-guard/token-guard.guard';
 const { InputFile } = require('node-appwrite/file');
 
 @Controller('listings')
+@UseGuards(TokenGuard)
 export class ListingsController {
   constructor(readonly listingService: ListingsService) {}
 
@@ -37,9 +38,9 @@ export class ListingsController {
   }
 
   @Get('')
+  @UseGuards(TokenGuard)
   async GetListings(@Req() req: Request) {
     const listings = await this.listingService.getListings();
-    console.log(listings);
     return listings;
   }
 }

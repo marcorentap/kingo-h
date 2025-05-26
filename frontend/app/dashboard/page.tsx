@@ -20,7 +20,7 @@ export default function HomePage() {
     }
 
     (async () => {
-      const res = await backendFetch("/listings", null);
+      const res = await backendFetch("/listings", "GET", "application/json");
       const j = await res.json();
       let ls: ListingDto[] = j as ListingDto[];
       setListings(ls);
@@ -59,7 +59,7 @@ export default function HomePage() {
       </div>
       <div>
         {listings.map((item) => (
-          <>{item.title}</>
+          <div key={item.id}>{item.title}</div>
         ))}
       </div>
     </>
