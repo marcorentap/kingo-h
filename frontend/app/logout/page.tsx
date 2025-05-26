@@ -5,33 +5,34 @@ import { getAppwriteClient } from "@/lib/appwrite";
 import { Account, AppwriteException, Client } from "appwrite";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
+import { UserContext } from "../UserContext";
 
-type LoginInputs = {
-  email: string;
-  password: string;
-};
-
-export default function Home() {
+export default function LogoutPage() {
+  const { user, loading, setUser } = useContext(UserContext);
   const router = useRouter();
 
   useEffect(() => {
     (async () => {
-      const client = getAppwriteClient();
-      const account = new Account(client);
-      try {
+      if (!loading && user) {
         // User has existing session. Delete the session
-        await account.get();
-        router.push("/");
-        account.deleteSession("current");
-        router.push("/login");
-      } catch (e) {
-        // User has no existing session. Go to login
-        router.push("/login");
+        const account = new Account(getAppwriteClient());
+        await account.deleteSession("current");
+        setUser(null);
+        window.location.href = "/login"; // Hard refresh
+      }
+
+      if (!loading && !user) {
+        // No existing session. Go to login
+        window.location.href = "/login"; // Hard refresh
       }
     })();
-  }, []);
+  }, [user, loading]);
+
+  if (loading) {
+    return <p>Loading...</p>;
+  }
 
   return <></>;
 }

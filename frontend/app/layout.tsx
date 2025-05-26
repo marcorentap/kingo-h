@@ -42,12 +42,12 @@ export default function RootLayout({
   }, []);
 
   return (
-    <UserContext.Provider value={{ user, loading }}>
+    <UserContext.Provider value={{ user, setUser, loading }}>
       <html lang="en">
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
-          {children}
+          <div className="max-w-xs mx-auto">{children}</div>
         </body>
       </html>
     </UserContext.Provider>
