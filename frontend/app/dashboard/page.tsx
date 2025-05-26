@@ -9,11 +9,20 @@ import { LucideCirclePlus, LucideSearch } from "lucide-react";
 import Link from "next/link";
 import { backendFetch } from "@/lib/backend";
 import { ListingDto } from "@/lib/Listing";
+import { getAppwriteClient } from "@/lib/appwrite";
+import { Storage } from "appwrite";
 
 export default function HomePage() {
   const { user, loading } = useContext(UserContext);
   const [listings, setListings] = useState<ListingDto[]>([]);
   const router = useRouter();
+
+  function getPictureUrl(id: string) {
+    const client = getAppwriteClient();
+    const storage = new Storage(client);
+    return storage.getFileDownload("listings", id);
+  }
+
   useEffect(() => {
     if (!loading && !user) {
       router.push("/login");
@@ -59,7 +68,10 @@ export default function HomePage() {
       </div>
       <div>
         {listings.map((item) => (
-          <div key={item.id}>{item.title}</div>
+          <div key={item.id}>
+            <p>{item.title}</p>
+            <img src={getPictureUrl(item.pictures[0])} />
+          </div>
         ))}
       </div>
     </>
