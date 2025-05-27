@@ -77,6 +77,33 @@ export class AppwriteService {
     ]);
   }
 
+  async addListingApplicant(id: string, userId: string) {
+    const db = new Databases(this.client);
+    const doc = await db.getDocument(this.dbId, 'listings', id);
+    let applicants: string[] = doc['applicants'];
+
+    applicants.push(userId);
+
+    console.log(applicants);
+
+    return await db.updateDocument(this.dbId, 'listings', id, {
+      applicants: applicants,
+    });
+  }
+
+  async getUserListingDocs(
+    userId: string,
+    limit: number = 25,
+    offset: number = 0,
+  ) {
+    const db = new Databases(this.client);
+    return await db.listDocuments(this.dbId, 'listings', [
+      Query.limit(limit),
+      Query.offset(offset),
+      Query.equal('lister', userId),
+    ]);
+  }
+
   async getCanonicalListingPictureUrl(id: string) {
     const storage = new Storage(this.client);
     return await storage.getFileDownload('listings', id);

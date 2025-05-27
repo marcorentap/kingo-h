@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { ID } from 'node-appwrite';
+import { HttpStatus, Injectable } from '@nestjs/common';
+import { Databases, ID } from 'node-appwrite';
 import { AppwriteService } from 'src/appwrite/appwrite.service';
 import { DBListingDto } from 'src/appwrite/db-listing.dto';
 import { ListingDto } from './listing.dto';
@@ -40,6 +40,11 @@ export class ListingsService {
     return {};
   }
 
+  async applyToListing(id: string, userId: string) {
+    const doc = await this.appwriteService.addListingApplicant(id, userId);
+    return HttpStatus.OK;
+  }
+
   async getListing(id: string) {
     const doc = await this.appwriteService.getListingDoc(id);
     return new ListingDto(
@@ -52,9 +57,33 @@ export class ListingsService {
       doc['payment'],
       doc['longitude'],
       doc['latitude'],
-      doc['applicants'],
-      doc['freelancer'],
+      doc['applicants'].map((app) => app['$id']),
+      doc['freelancer']['$id'],
     );
+  }
+
+  async getUserListings(userId: string) {
+    const docs = await this.appwriteService.getUserListingDocs(userId);
+
+    const dtos = await Promise.all(
+      docs.documents.map(async (doc) => {
+        return new ListingDto(
+          doc['$id'],
+          doc['title'],
+          doc['description'],
+          doc['pictures'],
+          doc['status'],
+          doc['lister']['$id'],
+          doc['payment'],
+          doc['longitude'],
+          doc['latitude'],
+          doc['applicants'].map((app) => app['$id']),
+          doc['freelancer']['$id'],
+        );
+      }),
+    );
+
+    return dtos;
   }
 
   async getListings() {
@@ -72,8 +101,8 @@ export class ListingsService {
           doc['payment'],
           doc['longitude'],
           doc['latitude'],
-          doc['applicants'],
-          doc['freelancer'],
+          doc['applicants'].map((app) => app['$id']),
+          doc['freelancer']['$id'],
         );
       }),
     );

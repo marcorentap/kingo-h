@@ -117,8 +117,8 @@ export default function ListingPageComponent(props: ListingPageComponentProps) {
           </div>
         </div>
 
+        <p className="text-lg font-semibold">{listing.title}</p>
         <div className="mt-4">
-          <p className="text-lg font-semibold">{listing.title}</p>
           <div className="flex gap-2">
             <p className="text-xs">{listing.longitude}</p>
             <p className="text-xs">{listing.latitude}</p>
@@ -138,9 +138,14 @@ export default function ListingPageComponent(props: ListingPageComponentProps) {
             </p>
             <p className="text-gray-500 text-xs">Non-negotiable</p>
           </div>
-          {listing.lister != user.appwrite["$id"] && (
-            <Button className="bg-blue-900 text-xs h-12">Apply</Button>
-          )}
+          {listing.lister != user.appwrite["$id"] &&
+            (listing.applicants?.includes(user.appwrite["$id"]) ? (
+              <Button disabled={true} className="bg-blue-900 text-xs h-12">
+                Already applied
+              </Button>
+            ) : (
+              <Button className="bg-blue-900 text-xs h-12">Apply</Button>
+            ))}
         </div>
       </div>
     </div>
