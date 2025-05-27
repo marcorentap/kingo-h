@@ -54,7 +54,7 @@ export default function CreateListingsPage() {
   return (
     <>
       <div className="flex h-14 items-center mt-4 w-full">
-        <Link href="/dashboard">
+        <Link href="/dashboard" className="text-gray-500">
           <LucideHome />
         </Link>
         <h2 className="text-xl ml-2 font-bold grow">Create Listing</h2>

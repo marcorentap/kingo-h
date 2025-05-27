@@ -1,8 +1,9 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { Databases, ID } from 'node-appwrite';
+import { AuthenticatorType, Databases, ID, Users } from 'node-appwrite';
 import { AppwriteService } from 'src/appwrite/appwrite.service';
 import { DBListingDto } from 'src/appwrite/db-listing.dto';
 import { ListingDto } from './listing.dto';
+import { UserDto } from 'src/users/user.dto';
 
 @Injectable()
 export class ListingsService {
@@ -60,6 +61,31 @@ export class ListingsService {
       doc['applicants'].map((app) => app['$id']),
       doc['freelancer']['$id'],
     );
+  }
+
+  async getListingApplicants(id: string) {
+    const client = this.appwriteService.getClient();
+    const doc = await this.appwriteService.getListingDoc(id);
+    const users = new Users(client);
+    const dbApplicants = doc['applicants'];
+    const applicantNames = {};
+
+    const promises = dbApplicants.map(async (app) => {
+      const applicantId = app['$id'];
+      if (!applicantNames[applicantId]) {
+        const authApplicants = await users.get(applicantId);
+        applicantNames[applicantId] = authApplicants.name;
+      }
+
+      return new UserDto({
+        name: applicantNames[applicantId],
+        campus: app.campus,
+        profile_picture: app.profile_picture,
+      });
+    });
+
+    const applicantDtos = await Promise.all(promises);
+    return applicantDtos;
   }
 
   async getUserListings(userId: string) {

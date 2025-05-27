@@ -62,6 +62,13 @@ export class ListingsController {
     return listing;
   }
 
+  @Get('/:id/applicants')
+  @UseGuards(TokenGuard)
+  async GetListingApplicants(@Req() req: Request, @Param('id') id: string) {
+    const applicants = await this.listingService.getListingApplicants(id);
+    return applicants;
+  }
+
   @Post('/:id/apply')
   @UseGuards(TokenGuard)
   async ApplyToListing(@Req() req: Request, @Param('id') id: string) {

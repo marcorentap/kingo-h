@@ -36,7 +36,7 @@ function ListingCard(props: ListingCardProps) {
       <div className="ml-4 flex flex-col justify-between grow">
         <div>
           <p className="text-lg font-medium">{listing.title}</p>
-          <div className="flex">
+          <div className="flex gap-2">
             <p className="text-xs text-gray-500">
               {Math.trunc(
                 calculateDistance(
@@ -132,9 +132,8 @@ export default function HomePage() {
 
       <div className="grid gap-4 mt-4">
         {listings.map((item) => (
-          <Link href={"/listings/" + item.id}>
+          <Link href={"/listings/" + item.id} key={item.id}>
             <ListingCard
-              key={item.id}
               listing={item}
               userLongitude={userLong}
               userLatitude={userLat}

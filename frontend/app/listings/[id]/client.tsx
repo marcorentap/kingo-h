@@ -18,6 +18,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User } from "@/lib/User";
 import { Button } from "@/components/ui/button";
 import { LucideChevronLeft, LucideHeart } from "lucide-react";
+import { calculateDistance } from "@/lib/utils";
 
 interface PicturesCarouselProps {
   pictures: string[];
@@ -43,6 +44,28 @@ function PicturesCarousel(props: PicturesCarouselProps) {
   );
 }
 
+interface ApplicantCardProps {
+  applicant: User;
+}
+function ApplicantCard(props: ApplicantCardProps) {
+  const { applicant } = props;
+  return (
+    <div className="flex mt-4 w-full">
+      <Avatar className="w-10 h-auto">
+        <AvatarImage src={applicant.profile_picture} />
+        <AvatarFallback>
+          <img src="/default_avatar.png" />
+        </AvatarFallback>
+      </Avatar>
+
+      <div className="ml-2 w-full">
+        <p className="text-sm font-semibold">{applicant.name}</p>
+        <p className="text-xs">male</p>
+      </div>
+    </div>
+  );
+}
+
 interface ListingPageComponentProps {
   id: string;
 }
@@ -50,8 +73,11 @@ export default function ListingPageComponent(props: ListingPageComponentProps) {
   const { id } = props;
   const { user, loading } = useContext(UserContext);
   const [listing, setListing] = useState<ListingDto | null>();
+  const [applicants, setApplicants] = useState<User[]>([]);
   const [pictures, setPictures] = useState<string[]>([]);
   const [lister, setLister] = useState<User | null>(null);
+  const [userLat, setUserLat] = useState<number | null>(null);
+  const [userLong, setUserLong] = useState<number | null>(null);
   const router = useRouter();
 
   async function applyToListing() {
@@ -94,7 +120,25 @@ export default function ListingPageComponent(props: ListingPageComponentProps) {
       const lister: User = listerJson as User;
       setLister(lister);
 
-      console.log(listing);
+      if (listing.lister == user.appwrite["$id"]) {
+        const applicantsRes = await backendFetch(
+          "/listings/" + id + "/applicants",
+          "GET",
+          "application/json",
+        );
+        const applicantsJson = await applicantsRes.json();
+        setApplicants(applicantsJson as User[]);
+
+        let pos = navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            setUserLat(pos.coords.latitude);
+            setUserLong(pos.coords.longitude);
+          },
+          (e) => {
+            console.log(e);
+          },
+        );
+      }
     })();
   }, [user, loading]);
 
@@ -129,16 +173,35 @@ export default function ListingPageComponent(props: ListingPageComponentProps) {
         </div>
 
         <p className="text-lg font-semibold">{listing.title}</p>
-        <div className="mt-4">
+        <div>
           <div className="flex gap-2">
-            <p className="text-xs">{listing.longitude}</p>
-            <p className="text-xs">{listing.latitude}</p>
+            <p className="text-xs">
+              {Math.trunc(
+                calculateDistance(
+                  listing.latitude,
+                  listing.longitude,
+                  userLat,
+                  userLong,
+                ),
+              )}
+              m
+            </p>
+            <p className="text-xs">2 minutes ago</p>
           </div>
         </div>
 
-        <p>{listing.description}</p>
-        <div className="h-32"></div>
+        {listing.lister == user.appwrite["$id"] && applicants.length != 0 && (
+          <div className="mt-4">
+            <p className="text-lg font-semibold">Applicants</p>
+            {applicants.map((app) => {
+              return <ApplicantCard applicant={app} />;
+            })}
+          </div>
+        )}
 
+        <p>{listing.description}</p>
+
+        <div className="h-32"></div>
         <div className="flex fixed bottom-0 left-0 w-full bg-white p-4 justify-start gap-4 items-center border-t">
           <div className="text-gray-500">
             <LucideHeart className="w-10 h-auto" />
