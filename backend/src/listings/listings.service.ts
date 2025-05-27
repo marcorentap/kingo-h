@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import { AuthenticatorType, Databases, ID, Users } from 'node-appwrite';
 import { AppwriteService } from 'src/appwrite/appwrite.service';
 import { DBListingDto } from 'src/appwrite/db-listing.dto';
@@ -46,21 +46,36 @@ export class ListingsService {
     return HttpStatus.OK;
   }
 
+  async selectFreelancer(id: string, userId: string, freelancerId: string) {
+    const db = new Databases(this.appwriteService.getClient());
+    const doc = await this.appwriteService.getListingDoc(id);
+    if (doc['lister']['$id'] != userId) {
+      return HttpStatus.UNAUTHORIZED;
+    }
+
+    console.log(freelancerId);
+    if (!freelancerId) {
+      return HttpStatus.BAD_REQUEST;
+    }
+
+    return this.appwriteService.selectFreelancer(id, userId, freelancerId);
+  }
+
   async getListing(id: string) {
     const doc = await this.appwriteService.getListingDoc(id);
-    return new ListingDto(
-      doc['$id'],
-      doc['title'],
-      doc['description'],
-      doc['pictures'],
-      doc['status'],
-      doc['lister']['$id'],
-      doc['payment'],
-      doc['longitude'],
-      doc['latitude'],
-      doc['applicants'].map((app) => app['$id']),
-      doc['freelancer']['$id'],
-    );
+    return new ListingDto({
+      id: doc['$id'],
+      title: doc['title'],
+      description: doc['description'],
+      pictures: doc['pictures'],
+      status: doc['status'],
+      lister: doc['lister']['$id'],
+      payment: doc['payment'],
+      longitude: doc['longitude'],
+      latitude: doc['latitude'],
+      applicants: doc['applicants'].map((app) => app['$id']),
+      freelancer: doc['freelancer']['$id'],
+    });
   }
 
   async getListingApplicants(id: string) {
@@ -93,19 +108,19 @@ export class ListingsService {
 
     const dtos = await Promise.all(
       docs.documents.map(async (doc) => {
-        return new ListingDto(
-          doc['$id'],
-          doc['title'],
-          doc['description'],
-          doc['pictures'],
-          doc['status'],
-          doc['lister']['$id'],
-          doc['payment'],
-          doc['longitude'],
-          doc['latitude'],
-          doc['applicants'].map((app) => app['$id']),
-          doc['freelancer']['$id'],
-        );
+        return new ListingDto({
+          id: doc['$id'],
+          title: doc['title'],
+          description: doc['description'],
+          pictures: doc['pictures'],
+          status: doc['status'],
+          lister: doc['lister']['$id'],
+          payment: doc['payment'],
+          longitude: doc['longitude'],
+          latitude: doc['latitude'],
+          applicants: doc['applicants'].map((app) => app['$id']),
+          freelancer: doc['freelancer']['$id'],
+        });
       }),
     );
 
@@ -117,19 +132,19 @@ export class ListingsService {
 
     const dtos = await Promise.all(
       docs.documents.map(async (doc) => {
-        return new ListingDto(
-          doc['$id'],
-          doc['title'],
-          doc['description'],
-          doc['pictures'],
-          doc['status'],
-          doc['lister']['$id'],
-          doc['payment'],
-          doc['longitude'],
-          doc['latitude'],
-          doc['applicants'].map((app) => app['$id']),
-          doc['freelancer']['$id'],
-        );
+        return new ListingDto({
+          id: doc['$id'],
+          title: doc['title'],
+          description: doc['description'],
+          pictures: doc['pictures'],
+          status: doc['status'],
+          lister: doc['lister']['$id'],
+          payment: doc['payment'],
+          longitude: doc['longitude'],
+          latitude: doc['latitude'],
+          applicants: doc['applicants'].map((app) => app['$id']),
+          freelancer: doc['freelancer']['$id'],
+        });
       }),
     );
 

@@ -47,7 +47,7 @@ export default function CreateListingsPage() {
 
     const res = await backendFetch("/listings", "POST", null, formData);
     if (res.ok) {
-      router.push("/dashboard");
+      window.location.href = "/dashboard";
     }
   };
 

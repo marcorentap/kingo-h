@@ -30,7 +30,7 @@ export default function LoginPage() {
   useEffect(() => {
     if (!loading && user) {
       // User has existing session. Redirect to homepage
-      router.push("/");
+      window.location.href = "/";
     }
   }, [user, loading]);
 

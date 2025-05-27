@@ -60,7 +60,7 @@ export default function ProfilePage() {
   const router = useRouter();
   useEffect(() => {
     if (!loading && !user) {
-      router.push("/login");
+      window.location.href = "/login";
     }
 
     (async () => {

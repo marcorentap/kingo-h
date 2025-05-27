@@ -15,6 +15,7 @@ import { CreateListingDto } from './create-listing.dto';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { ListingsService } from './listings.service';
 import { TokenGuard } from 'src/token-guard/token-guard.guard';
+import { SelectFreelancerDto } from './select-freelancer.dto';
 const { InputFile } = require('node-appwrite/file');
 
 @Controller('listings')
@@ -73,5 +74,19 @@ export class ListingsController {
   @UseGuards(TokenGuard)
   async ApplyToListing(@Req() req: Request, @Param('id') id: string) {
     return await this.listingService.applyToListing(id, req['userId']);
+  }
+
+  @Post('/:id/freelancer')
+  @UseGuards(TokenGuard)
+  async SelectFreelancer(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() form: SelectFreelancerDto,
+  ) {
+    return await this.listingService.selectFreelancer(
+      id,
+      req['userId'],
+      form.freelancerId,
+    );
   }
 }

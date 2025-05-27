@@ -45,10 +45,25 @@ function PicturesCarousel(props: PicturesCarouselProps) {
 }
 
 interface ApplicantCardProps {
+  listing: ListingDto;
   applicant: User;
+  applicantId: string;
+  disabled: boolean;
 }
 function ApplicantCard(props: ApplicantCardProps) {
-  const { applicant } = props;
+  const { applicant, applicantId, disabled, listing } = props;
+
+  async function selectFreelancer(freelancerId: string) {
+    const selectRes = await backendFetch(
+      "/listings/" + listing.id + "/freelancer",
+      "POST",
+      "application/json",
+      JSON.stringify({ freelancerId: freelancerId }),
+    );
+    if (selectRes.ok) {
+      window.location.href = "/listings/" + listing.id;
+    }
+  }
   return (
     <div className="flex mt-4 w-full">
       <Avatar className="w-10 h-auto">
@@ -62,6 +77,40 @@ function ApplicantCard(props: ApplicantCardProps) {
         <p className="text-sm font-semibold">{applicant.name}</p>
         <p className="text-xs">male</p>
       </div>
+
+      <Button
+        disabled={disabled}
+        className="bg-blue-900"
+        onClick={() => {
+          selectFreelancer(applicantId);
+        }}
+      >
+        Select
+      </Button>
+    </div>
+  );
+}
+
+interface FreelancerCardProps {
+  freelancer: User;
+}
+function FreelancerCard(props: FreelancerCardProps) {
+  const { freelancer } = props;
+  return (
+    <div className="flex mt-4 w-full">
+      <Avatar className="w-10 h-auto">
+        <AvatarImage src={freelancer.profile_picture} />
+        <AvatarFallback>
+          <img src="/default_avatar.png" />
+        </AvatarFallback>
+      </Avatar>
+
+      <div className="ml-2 w-full">
+        <p className="text-sm font-semibold">{freelancer.name}</p>
+        <p className="text-xs">male</p>
+      </div>
+
+      <Button className="bg-blue-900">Select</Button>
     </div>
   );
 }
@@ -74,6 +123,7 @@ export default function ListingPageComponent(props: ListingPageComponentProps) {
   const { user, loading } = useContext(UserContext);
   const [listing, setListing] = useState<ListingDto | null>();
   const [applicants, setApplicants] = useState<User[]>([]);
+  const [freelancer, setFreelancer] = useState<User | null>(null);
   const [pictures, setPictures] = useState<string[]>([]);
   const [lister, setLister] = useState<User | null>(null);
   const [userLat, setUserLat] = useState<number | null>(null);
@@ -93,7 +143,7 @@ export default function ListingPageComponent(props: ListingPageComponentProps) {
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push("/login");
+      window.location.href = "/login";
     }
 
     (async () => {
@@ -106,7 +156,7 @@ export default function ListingPageComponent(props: ListingPageComponentProps) {
       const listing: ListingDto = listingJson as ListingDto;
       setListing(listing);
 
-      let pics = listing.pictures.map((pic) => {
+      let pics = listing.pictures?.map((pic) => {
         return getPictureUrl(pic);
       });
       setPictures(pics);
@@ -139,6 +189,17 @@ export default function ListingPageComponent(props: ListingPageComponentProps) {
           },
         );
       }
+
+      if (listing.freelancer) {
+        const freelancerRes = await backendFetch(
+          "users/" + listing.freelancer!,
+          "GET",
+          "application/json",
+        );
+        const freelancerJson = await freelancerRes.json();
+        const freelancer = freelancerJson as User;
+        setFreelancer(freelancer);
+      }
     })();
   }, [user, loading]);
 
@@ -147,12 +208,14 @@ export default function ListingPageComponent(props: ListingPageComponentProps) {
   }
 
   return (
-    <div className="relative mx-auto">
+    <div className="mx-auto">
       <button
         onClick={() => router.back()}
-        className="absolute top-4 left-4 z-10"
+        className="fixed top-4 left-4 z-10 p-1 bg-black/50 rounded-full "
       >
-        <LucideChevronLeft className="w-10 h-10" />
+        <div>
+          <LucideChevronLeft className="w-5 h-5 text-white" />
+        </div>
       </button>
 
       <div className="mx-auto">
@@ -190,16 +253,32 @@ export default function ListingPageComponent(props: ListingPageComponentProps) {
           </div>
         </div>
 
+        {freelancer && (
+          <div className="mt-4">
+            <p className="text-lg font-semibold">Freelancer</p>
+            <FreelancerCard freelancer={freelancer} />;
+          </div>
+        )}
+
         {listing.lister == user.appwrite["$id"] && applicants.length != 0 && (
           <div className="mt-4">
             <p className="text-lg font-semibold">Applicants</p>
-            {applicants.map((app) => {
-              return <ApplicantCard applicant={app} />;
+            {applicants.map((app, i) => {
+              return (
+                <ApplicantCard
+                  listing={listing}
+                  applicant={app}
+                  applicantId={listing.applicants[i]}
+                  disabled={listing.status != "LISTED"}
+                />
+              );
             })}
           </div>
         )}
 
-        <p>{listing.description}</p>
+        <div className="mt-4">
+          <p>{listing.description}</p>
+        </div>
 
         <div className="h-32"></div>
         <div className="flex fixed bottom-0 left-0 w-full bg-white p-4 justify-start gap-4 items-center border-t">

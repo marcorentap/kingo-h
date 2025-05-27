@@ -55,7 +55,6 @@ export class AppwriteService {
 
   async createListing(userId: string, dto: DBListingDto) {
     const db = new Databases(this.client);
-    console.log(dto);
     const doc = await db.createDocument(
       this.dbId,
       'listings',
@@ -71,10 +70,12 @@ export class AppwriteService {
 
   async getListingDocs(limit: number = 25, offset: number = 0) {
     const db = new Databases(this.client);
-    return await db.listDocuments(this.dbId, 'listings', [
+    const docs = await db.listDocuments(this.dbId, 'listings', [
       Query.limit(limit),
       Query.offset(offset),
     ]);
+
+    return docs;
   }
 
   async addListingApplicant(id: string, userId: string) {
@@ -83,8 +84,6 @@ export class AppwriteService {
     let applicants: string[] = doc['applicants'];
 
     applicants.push(userId);
-
-    console.log(applicants);
 
     return await db.updateDocument(this.dbId, 'listings', id, {
       applicants: applicants,
@@ -107,5 +106,13 @@ export class AppwriteService {
   async getCanonicalListingPictureUrl(id: string) {
     const storage = new Storage(this.client);
     return await storage.getFileDownload('listings', id);
+  }
+
+  async selectFreelancer(id: string, userId: string, freelancerId: string) {
+    const db = new Databases(this.client);
+    return await db.updateDocument(this.dbId, 'listings', id, {
+      freelancer: freelancerId,
+      status: 'INPROGRESS',
+    });
   }
 }

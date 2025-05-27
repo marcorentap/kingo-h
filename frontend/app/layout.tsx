@@ -38,8 +38,14 @@ export default function RootLayout({
         const me: User = j as User;
 
         console.log(me);
-
-        setUser(new User({ ...me, appwrite: u }));
+        setUser(
+          new User({
+            name: u.name,
+            campus: me.campus,
+            profile_picture: me.profile_picture,
+            appwrite: u,
+          }),
+        );
       } catch (e) {
         setUser(null);
       } finally {

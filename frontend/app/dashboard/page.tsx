@@ -15,6 +15,7 @@ import { backendFetch } from "@/lib/backend";
 import { ListingDto } from "@/lib/Listing";
 import { getPictureUrl } from "@/lib/appwrite";
 import { calculateDistance } from "@/lib/utils";
+import { ID } from "appwrite";
 
 interface ListingCardProps {
   listing: ListingDto;
@@ -52,7 +53,7 @@ function ListingCard(props: ListingCardProps) {
           </div>
           <div>
             <p className="font-bold text-lg">
-              {listing.payment.toLocaleString()} won
+              {listing?.payment?.toLocaleString()} won
             </p>
           </div>
         </div>
@@ -76,7 +77,7 @@ export default function HomePage() {
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push("/login");
+      window.location.href = "/login";
     }
 
     (async () => {
@@ -84,7 +85,6 @@ export default function HomePage() {
       const j = await res.json();
       let ls: ListingDto[] = j as ListingDto[];
       setListings(ls);
-      console.log(ls);
 
       let pos = navigator.geolocation.getCurrentPosition(
         (pos) => {
@@ -105,9 +105,11 @@ export default function HomePage() {
   return (
     <>
       <div className="flex h-14 items-center mt-4 w-full">
-        <p className="text-xl font-bold grow">
-          Hi, {user?.name.split(" ")[0]}!
-        </p>
+        {user?.name && (
+          <p className="text-xl font-bold grow">
+            Hi, {user?.name?.split(" ")[0]}!
+          </p>
+        )}
 
         <div className="bg-gray-300 rounded-full flex items-center py-0.5 px-1 ml-10">
           <LucideCirclePlus className="w-5" />
@@ -132,7 +134,7 @@ export default function HomePage() {
 
       <div className="grid gap-4 mt-4">
         {listings.map((item) => (
-          <Link href={"/listings/" + item.id} key={item.id}>
+          <Link href={"/listings/" + item.id} key={ID.unique()}>
             <ListingCard
               listing={item}
               userLongitude={userLong}
