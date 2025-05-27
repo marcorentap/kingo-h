@@ -109,8 +109,6 @@ function FreelancerCard(props: FreelancerCardProps) {
         <p className="text-sm font-semibold">{freelancer.name}</p>
         <p className="text-xs">male</p>
       </div>
-
-      <Button className="bg-blue-900">Select</Button>
     </div>
   );
 }
@@ -192,12 +190,13 @@ export default function ListingPageComponent(props: ListingPageComponentProps) {
 
       if (listing.freelancer) {
         const freelancerRes = await backendFetch(
-          "users/" + listing.freelancer!,
+          "/users/" + listing.freelancer!,
           "GET",
           "application/json",
         );
         const freelancerJson = await freelancerRes.json();
         const freelancer = freelancerJson as User;
+        console.log(freelancer);
         setFreelancer(freelancer);
       }
     })();
@@ -238,17 +237,19 @@ export default function ListingPageComponent(props: ListingPageComponentProps) {
         <p className="text-lg font-semibold">{listing.title}</p>
         <div>
           <div className="flex gap-2">
-            <p className="text-xs">
-              {Math.trunc(
-                calculateDistance(
-                  listing.latitude,
-                  listing.longitude,
-                  userLat,
-                  userLong,
-                ),
-              )}
-              m
-            </p>
+            {userLat && userLong && (
+              <p className="text-xs">
+                {Math.trunc(
+                  calculateDistance(
+                    listing.latitude,
+                    listing.longitude,
+                    userLat,
+                    userLong,
+                  ),
+                )}
+                m
+              </p>
+            )}
             <p className="text-xs">2 minutes ago</p>
           </div>
         </div>
@@ -256,7 +257,7 @@ export default function ListingPageComponent(props: ListingPageComponentProps) {
         {freelancer && (
           <div className="mt-4">
             <p className="text-lg font-semibold">Freelancer</p>
-            <FreelancerCard freelancer={freelancer} />;
+            <FreelancerCard freelancer={freelancer} />
           </div>
         )}
 
@@ -291,7 +292,9 @@ export default function ListingPageComponent(props: ListingPageComponentProps) {
             </p>
             <p className="text-gray-500 text-xs">Non-negotiable</p>
           </div>
-          {listing.lister != user.appwrite["$id"] &&
+
+          {listing.status == "LISTED" &&
+            listing.lister != user.appwrite["$id"] &&
             (listing.applicants?.includes(user.appwrite["$id"]) ? (
               <Button disabled={true} className="bg-blue-900 text-xs h-12">
                 Already applied
@@ -304,6 +307,10 @@ export default function ListingPageComponent(props: ListingPageComponentProps) {
                 Apply
               </Button>
             ))}
+          {listing.status == "INPROGRESS" &&
+            listing.freelancer == user.appwrite["$id"] && (
+              <Button className="bg-green-700">Mark complete</Button>
+            )}
         </div>
       </div>
     </div>
