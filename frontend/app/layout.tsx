@@ -7,6 +7,7 @@ import { Account, Models } from "appwrite";
 import { getAppwriteClient } from "@/lib/appwrite";
 import { UserContext } from "./UserContext";
 import { User } from "@/lib/User";
+import { backendFetch } from "@/lib/backend";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,7 +33,13 @@ export default function RootLayout({
       const account = new Account(client);
       try {
         const u = await account.get();
-        setUser(new User(u.name, u));
+        const res = await backendFetch("/users/me", "GET", "application/json");
+        const j = await res.json();
+        const me: User = j as User;
+
+        console.log(me);
+
+        setUser(new User({ ...me, appwrite: u }));
       } catch (e) {
         setUser(null);
       } finally {

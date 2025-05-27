@@ -15,6 +15,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 type CreateListingInputs = {
   title: string;
   description: string;
+  payment: number;
   files: File[];
 };
 
@@ -27,14 +28,27 @@ export default function CreateListingsPage() {
     const formData = new FormData();
     formData.append("title", data.title);
     formData.append("description", data.description);
+    formData.append("payment", data.payment.toString());
 
     let fileList = data.files;
     for (let i = 0; i < fileList.length; i++) {
       formData.append("files", fileList[i]); // match 'files' field name expected by FilesInterceptor
     }
 
+    let pos = navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        formData.append("longitude", pos.coords.longitude.toString());
+        formData.append("latitude", pos.coords.latitude.toString());
+      },
+      (e) => {
+        console.log(e);
+      },
+    );
+
     const res = await backendFetch("/listings", "POST", null, formData);
-    router.push("/dashboard");
+    if (res.ok) {
+      router.push("/dashboard");
+    }
   };
 
   return (
@@ -74,6 +88,13 @@ export default function CreateListingsPage() {
               accept="image/*"
               {...register("files")}
             />
+          </div>
+          <div>
+            Payment
+            <div className="flex items-center">
+              <Input {...register("payment")} />
+              <p className="ml-2">won</p>
+            </div>
           </div>
         </div>
 

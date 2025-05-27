@@ -55,6 +55,7 @@ export class AppwriteService {
 
   async createListing(userId: string, dto: DBListingDto) {
     const db = new Databases(this.client);
+    console.log(dto);
     const doc = await db.createDocument(
       this.dbId,
       'listings',

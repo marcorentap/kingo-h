@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  ForbiddenException,
   Get,
   Param,
   Post,
@@ -33,6 +34,9 @@ export class ListingsController {
       req['userId'],
       form.title,
       form.description,
+      Number(form.longitude),
+      Number(form.latitude),
+      Number(form.payment),
       files,
     );
   }
@@ -42,5 +46,12 @@ export class ListingsController {
   async GetListings(@Req() req: Request) {
     const listings = await this.listingService.getListings();
     return listings;
+  }
+
+  @Get('/:id')
+  @UseGuards(TokenGuard)
+  async GetListing(@Req() req: Request, @Param('id') id: string) {
+    const listing = await this.listingService.getListing(id);
+    return listing;
   }
 }

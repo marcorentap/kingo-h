@@ -14,8 +14,12 @@ export class UsersService {
     const users = new Users(client);
     const db = new Databases(client);
     const authUser = await users.get(userId);
-
-    return await this.appwriteService.getUser(userId);
+    const dbUser = await this.appwriteService.getUser(userId);
+    return new UserDto({
+      name: authUser.name,
+      campus: dbUser.campus,
+      profile_picture: dbUser.profile_picture,
+    });
   }
 
   async createUser(userId: string, dto: DBUserDto) {

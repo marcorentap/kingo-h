@@ -1,3 +1,5 @@
+"use client";
+
 import { User } from "@/lib/User";
 import { createContext, Dispatch, SetStateAction } from "react";
 

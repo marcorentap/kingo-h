@@ -1,7 +1,12 @@
 export class CreateListingDto {
-  constructor(
-    readonly title: string,
-    readonly description: string,
-    readonly files: File[],
-  ) {}
+  readonly title: string;
+  readonly description: string;
+  readonly payment: number;
+  readonly longitude: number;
+  readonly latitude: number;
+  readonly files: File[];
+
+  constructor(partial: Partial<CreateListingDto>) {
+    Object.assign(this, partial);
+  }
 }

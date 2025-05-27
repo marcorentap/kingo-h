@@ -25,7 +25,7 @@ export default function ProfilePage() {
   return (
     <>
       <div className="flex h-14 items-center mt-4 w-full">
-        <Link href="/dashboard">
+        <Link href="/dashboard" className="text-gray-500">
           <LucideHome />
         </Link>
         <h2 className="text-xl ml-2 font-bold grow">Profile</h2>
@@ -33,7 +33,9 @@ export default function ProfilePage() {
       <div className="w-full">
         <Avatar className="mx-auto w-20 h-auto">
           <AvatarImage src={user?.profile_picture} />
-          <AvatarFallback>{user?.name.split(" ")[0]}</AvatarFallback>
+          <AvatarFallback>
+            <img src="/default_avatar.png" />
+          </AvatarFallback>
         </Avatar>
         <p className="text-xs text-center mx-auto text-gray-500 mt-2">
           Upload Image

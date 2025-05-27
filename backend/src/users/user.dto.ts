@@ -1,7 +1,9 @@
 export class UserDto {
-  constructor(
-    readonly name: string,
-    readonly campus: string,
-    readonly profile_picture: string,
-  ) {}
+  readonly name: string;
+  readonly campus: string;
+  readonly profile_picture: string;
+
+  constructor(partial: Partial<UserDto>) {
+    Object.assign(this, partial);
+  }
 }

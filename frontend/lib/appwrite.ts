@@ -1,4 +1,5 @@
 import { Client } from "appwrite";
+import { Storage } from "appwrite";
 
 export function getAppwriteClient(): Client {
   const endpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!;
@@ -6,4 +7,9 @@ export function getAppwriteClient(): Client {
 
   const client = new Client().setEndpoint(endpoint).setProject(project);
   return client;
+}
+export function getPictureUrl(id: string) {
+  const client = getAppwriteClient();
+  const storage = new Storage(client);
+  return storage.getFileDownload("listings", id);
 }

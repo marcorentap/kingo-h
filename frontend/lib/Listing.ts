@@ -10,6 +10,9 @@ export class ListingDto {
       | "AWAITREVIEW"
       | "COMPLETED" = "LISTED",
     readonly lister: string,
+    readonly payment: number,
+    readonly longitude: number,
+    readonly latitude: number,
     readonly applicants?: string[],
     readonly freelancer?: string,
   ) {}

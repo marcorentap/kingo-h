@@ -12,6 +12,9 @@ export class ListingsService {
     userId: string,
     title: string,
     description: string,
+    longitude: number,
+    latitude: number,
+    payment: number,
     files: Express.Multer.File[],
   ) {
     const uploadPromises = files.map(async (file) => {
@@ -24,13 +27,34 @@ export class ListingsService {
 
     this.appwriteService.createListing(
       userId,
-      new DBListingDto(userId, title, description, uploadedFileIds),
+      new DBListingDto({
+        lister: userId,
+        title: title,
+        description: description,
+        latitude: latitude,
+        longitude: longitude,
+        payment: payment,
+        pictures: uploadedFileIds,
+      }),
     );
     return {};
   }
 
   async getListing(id: string) {
-    const doc = this.appwriteService.getListingDoc(id);
+    const doc = await this.appwriteService.getListingDoc(id);
+    return new ListingDto(
+      doc['$id'],
+      doc['title'],
+      doc['description'],
+      doc['pictures'],
+      doc['status'],
+      doc['lister']['$id'],
+      doc['payment'],
+      doc['longitude'],
+      doc['latitude'],
+      doc['applicants'],
+      doc['freelancer'],
+    );
   }
 
   async getListings() {
@@ -39,12 +63,15 @@ export class ListingsService {
     const dtos = await Promise.all(
       docs.documents.map(async (doc) => {
         return new ListingDto(
-          doc['id'],
+          doc['$id'],
           doc['title'],
           doc['description'],
           doc['pictures'],
           doc['status'],
           doc['lister']['$id'],
+          doc['payment'],
+          doc['longitude'],
+          doc['latitude'],
           doc['applicants'],
           doc['freelancer'],
         );

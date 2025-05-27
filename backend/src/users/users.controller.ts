@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { TokenGuard } from 'src/token-guard/token-guard.guard';
 import { UsersService } from './users.service';
 import { DBUserDto } from 'src/appwrite/db-user.dto';
@@ -11,6 +19,12 @@ export class UsersController {
   @Get('/me')
   GetMe(@Req() req: Request) {
     return this.usersService.getUser(req['userId']);
+  }
+
+  @Get(':id')
+  @UseGuards(TokenGuard)
+  GetUser(@Req() req: Request, @Param('id') id: string) {
+    return this.usersService.getUser(id);
   }
 
   @Post('')
