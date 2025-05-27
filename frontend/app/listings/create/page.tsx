@@ -61,7 +61,9 @@ export default function CreateListingsPage() {
         <Link href="/profile">
           <Avatar>
             <AvatarImage src={user?.profile_picture} />
-            <AvatarFallback>{user?.name.split(" ")[0]}</AvatarFallback>
+            <AvatarFallback>
+              <img src="/default_avatar.png" />
+            </AvatarFallback>
           </Avatar>
         </Link>
       </div>
