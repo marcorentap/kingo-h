@@ -74,7 +74,7 @@ export class ListingsService {
       longitude: doc['longitude'],
       latitude: doc['latitude'],
       applicants: doc['applicants'].map((app) => app['$id']),
-      freelancer: doc['freelancer']['$id'],
+      freelancer: doc['freelancer'] ? doc['freelancer']['$id'] : null,
     });
   }
 
@@ -119,7 +119,7 @@ export class ListingsService {
           longitude: doc['longitude'],
           latitude: doc['latitude'],
           applicants: doc['applicants'].map((app) => app['$id']),
-          freelancer: doc['freelancer']['$id'],
+          freelancer: doc['freelancer'] ? doc['freelancer']['$id'] : null,
         });
       }),
     );
@@ -143,7 +143,7 @@ export class ListingsService {
           longitude: doc['longitude'],
           latitude: doc['latitude'],
           applicants: doc['applicants'].map((app) => app['$id']),
-          freelancer: doc['freelancer']['$id'],
+          freelancer: doc['freelancer'] ? doc['freelancer']['$id'] : null,
         });
       }),
     );
