@@ -107,7 +107,11 @@ export default function ProfilePage() {
 
       <div className="h-32"></div>
       <div className="flex fixed bottom-0 left-0 w-full bg-white p-4 justify-start gap-4 items-center border-t">
-        <Button className="bg-red-600 mx-auto text-xs w-xs h-12">Logout</Button>
+        <Link href="/logout" className="mx-auto">
+          <Button className="bg-red-600 mx-auto text-xs w-xs h-12">
+            Logout
+          </Button>
+        </Link>
       </div>
     </div>
   );

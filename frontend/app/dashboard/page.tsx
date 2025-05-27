@@ -14,12 +14,15 @@ import Link from "next/link";
 import { backendFetch } from "@/lib/backend";
 import { ListingDto } from "@/lib/Listing";
 import { getPictureUrl } from "@/lib/appwrite";
+import { calculateDistance } from "@/lib/utils";
 
 interface ListingCardProps {
   listing: ListingDto;
+  userLongitude: number;
+  userLatitude: number;
 }
 function ListingCard(props: ListingCardProps) {
-  const { listing } = props;
+  const { listing, userLongitude, userLatitude } = props;
 
   return (
     <div className="flex w-full">
@@ -34,7 +37,17 @@ function ListingCard(props: ListingCardProps) {
         <div>
           <p className="text-lg font-medium">{listing.title}</p>
           <div className="flex">
-            <p className="text-xs text-gray-500">200m</p>
+            <p className="text-xs text-gray-500">
+              {Math.trunc(
+                calculateDistance(
+                  listing.latitude,
+                  listing.longitude,
+                  userLatitude,
+                  userLongitude,
+                ),
+              )}
+              m
+            </p>
             <p className="text-xs text-gray-500">2 minutes ago</p>
           </div>
           <div>
@@ -54,6 +67,10 @@ function ListingCard(props: ListingCardProps) {
 
 export default function HomePage() {
   const { user, loading } = useContext(UserContext);
+
+  const [userLat, setUserLat] = useState<number | null>(null);
+  const [userLong, setUserLong] = useState<number | null>(null);
+
   const [listings, setListings] = useState<ListingDto[]>([]);
   const router = useRouter();
 
@@ -68,6 +85,16 @@ export default function HomePage() {
       let ls: ListingDto[] = j as ListingDto[];
       setListings(ls);
       console.log(ls);
+
+      let pos = navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setUserLat(pos.coords.latitude);
+          setUserLong(pos.coords.longitude);
+        },
+        (e) => {
+          console.log(e);
+        },
+      );
     })();
   }, [user, loading]);
 
@@ -106,7 +133,12 @@ export default function HomePage() {
       <div className="grid gap-4 mt-4">
         {listings.map((item) => (
           <Link href={"/listings/" + item.id}>
-            <ListingCard key={item.id} listing={item}></ListingCard>
+            <ListingCard
+              key={item.id}
+              listing={item}
+              userLongitude={userLong}
+              userLatitude={userLat}
+            ></ListingCard>
           </Link>
         ))}
       </div>

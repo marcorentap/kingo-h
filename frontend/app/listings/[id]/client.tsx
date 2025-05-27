@@ -54,6 +54,17 @@ export default function ListingPageComponent(props: ListingPageComponentProps) {
   const [lister, setLister] = useState<User | null>(null);
   const router = useRouter();
 
+  async function applyToListing() {
+    const res = await backendFetch(
+      "/listings/" + id + "/apply",
+      "POST",
+      "application/json",
+    );
+    if (res.ok) {
+      window.location.href = "/listings/" + id;
+    }
+  }
+
   useEffect(() => {
     if (!loading && !user) {
       router.push("/login");
@@ -144,7 +155,12 @@ export default function ListingPageComponent(props: ListingPageComponentProps) {
                 Already applied
               </Button>
             ) : (
-              <Button className="bg-blue-900 text-xs h-12">Apply</Button>
+              <Button
+                onClick={applyToListing}
+                className="bg-blue-900 text-xs h-12"
+              >
+                Apply
+              </Button>
             ))}
         </div>
       </div>
