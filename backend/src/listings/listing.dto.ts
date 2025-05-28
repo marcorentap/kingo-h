@@ -3,6 +3,8 @@ export class ListingDto {
   readonly title: string;
   readonly description: string;
   readonly pictures: string[];
+  readonly completion_pictures: string[];
+  readonly rating: number;
   readonly status: 'LISTED' | 'INPROGRESS' | 'AWAITREVIEW' | 'COMPLETED' =
     'LISTED';
   readonly lister: string;

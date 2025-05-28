@@ -37,7 +37,6 @@ export default function RootLayout({
         const j = await res.json();
         const me: User = j as User;
 
-        console.log(me);
         setUser(
           new User({
             name: u.name,

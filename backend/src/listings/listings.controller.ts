@@ -16,6 +16,8 @@ import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { ListingsService } from './listings.service';
 import { TokenGuard } from 'src/token-guard/token-guard.guard';
 import { SelectFreelancerDto } from './select-freelancer.dto';
+import { MarkListingCompleteDto } from './mark-listing-complete.dto';
+import { ApproveCompletionDto } from './approve-completion.dto';
 const { InputFile } = require('node-appwrite/file');
 
 @Controller('listings')
@@ -40,6 +42,17 @@ export class ListingsController {
       Number(form.payment),
       files,
     );
+  }
+  @UseGuards(TokenGuard)
+  @Post('/:id/complete')
+  @UseInterceptors(FilesInterceptor('files'))
+  MarkListingComplete(
+    @Req() req: Request,
+    @Body() form: MarkListingCompleteDto,
+    @Param('id') id: string,
+    @UploadedFiles() files: Express.Multer.File[],
+  ) {
+    return this.listingService.markListingComplete(req['userId'], id, files);
   }
 
   @Get('')
@@ -87,6 +100,19 @@ export class ListingsController {
       id,
       req['userId'],
       form.freelancerId,
+    );
+  }
+  @Post('/:id/approve')
+  @UseGuards(TokenGuard)
+  async ApproveListingCompletion(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() form: ApproveCompletionDto,
+  ) {
+    return await this.listingService.approveCompletion(
+      id,
+      req['userId'],
+      form.rating,
     );
   }
 }

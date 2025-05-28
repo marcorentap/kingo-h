@@ -3,8 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useContext, useEffect, useState } from "react";
 import { UserContext } from "../UserContext";
-import { Avatar, AvatarImage } from "@/components/ui/avatar";
-import { AvatarFallback } from "@radix-ui/react-avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   LucideCirclePlus,
   LucideMessageSquare,
@@ -39,14 +38,16 @@ function ListingCard(props: ListingCardProps) {
           <p className="text-lg font-medium">{listing.title}</p>
           <div className="flex gap-2">
             <p className="text-xs text-gray-500">
-              {Math.trunc(
-                calculateDistance(
-                  listing.latitude,
-                  listing.longitude,
-                  userLatitude,
-                  userLongitude,
-                ),
-              )}
+              {userLatitude &&
+                userLongitude &&
+                Math.trunc(
+                  calculateDistance(
+                    listing.latitude,
+                    listing.longitude,
+                    userLatitude,
+                    userLongitude,
+                  ),
+                )}
               m
             </p>
             <p className="text-xs text-gray-500">2 minutes ago</p>

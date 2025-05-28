@@ -115,4 +115,26 @@ export class AppwriteService {
       status: 'INPROGRESS',
     });
   }
+
+  async uploadCompletionPicture(file: File) {
+    const storage = new Storage(this.client);
+    const f = await storage.createFile('completion', ID.unique(), file);
+    return f;
+  }
+
+  async markListingComplete(id: string, completion_pictures: string[]) {
+    const db = new Databases(this.client);
+    return await db.updateDocument(this.dbId, 'listings', id, {
+      status: 'AWAITREVIEW',
+      completion_pictures: completion_pictures,
+    });
+  }
+
+  async markListingApproved(id: string, rating: number) {
+    const db = new Databases(this.client);
+    return await db.updateDocument(this.dbId, 'listings', id, {
+      status: 'COMPLETED',
+      rating: Number(rating),
+    });
+  }
 }

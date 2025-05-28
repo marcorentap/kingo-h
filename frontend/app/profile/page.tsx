@@ -3,8 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useContext, useEffect, useState } from "react";
 import { UserContext } from "../UserContext";
-import { Avatar, AvatarImage } from "@/components/ui/avatar";
-import { AvatarFallback } from "@radix-ui/react-avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   LucideCirclePlus,
   LucideHome,
@@ -68,7 +67,6 @@ export default function ProfilePage() {
       const j = await res.json();
       let ls: ListingDto[] = j as ListingDto[];
       setListings(ls);
-      console.log(ls);
     })();
   }, [user, loading]);
 

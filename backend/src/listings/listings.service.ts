@@ -1,5 +1,5 @@
 import { HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
-import { AuthenticatorType, Databases, ID, Users } from 'node-appwrite';
+import { AuthenticatorType, Databases, ID, Models, Users } from 'node-appwrite';
 import { AppwriteService } from 'src/appwrite/appwrite.service';
 import { DBListingDto } from 'src/appwrite/db-listing.dto';
 import { ListingDto } from './listing.dto';
@@ -8,6 +8,24 @@ import { UserDto } from 'src/users/user.dto';
 @Injectable()
 export class ListingsService {
   constructor(readonly appwriteService: AppwriteService) {}
+
+  listingDocToDto(doc: Models.Document) {
+    return new ListingDto({
+      id: doc['$id'],
+      title: doc['title'],
+      description: doc['description'],
+      pictures: doc['pictures'],
+      completion_pictures: doc['completion_pictures'],
+      rating: doc['rating'],
+      status: doc['status'],
+      lister: doc['lister']['$id'],
+      payment: doc['payment'],
+      longitude: doc['longitude'],
+      latitude: doc['latitude'],
+      applicants: doc['applicants'].map((app) => app['$id']),
+      freelancer: doc['freelancer'] ? doc['freelancer']['$id'] : null,
+    });
+  }
 
   async createListing(
     userId: string,
@@ -19,7 +37,7 @@ export class ListingsService {
     files: Express.Multer.File[],
   ) {
     const uploadPromises = files.map(async (file) => {
-      const f = new File([file.buffer], title);
+      const f = new File([file.buffer], file.filename);
       const uploaded = await this.appwriteService.uploadListingPicture(f);
       return uploaded['$id'];
     });
@@ -38,7 +56,7 @@ export class ListingsService {
         pictures: uploadedFileIds,
       }),
     );
-    return {};
+    return HttpStatus.OK;
   }
 
   async applyToListing(id: string, userId: string) {
@@ -53,7 +71,6 @@ export class ListingsService {
       return HttpStatus.UNAUTHORIZED;
     }
 
-    console.log(freelancerId);
     if (!freelancerId) {
       return HttpStatus.BAD_REQUEST;
     }
@@ -63,19 +80,33 @@ export class ListingsService {
 
   async getListing(id: string) {
     const doc = await this.appwriteService.getListingDoc(id);
-    return new ListingDto({
-      id: doc['$id'],
-      title: doc['title'],
-      description: doc['description'],
-      pictures: doc['pictures'],
-      status: doc['status'],
-      lister: doc['lister']['$id'],
-      payment: doc['payment'],
-      longitude: doc['longitude'],
-      latitude: doc['latitude'],
-      applicants: doc['applicants'].map((app) => app['$id']),
-      freelancer: doc['freelancer'] ? doc['freelancer']['$id'] : null,
+    return this.listingDocToDto(doc);
+  }
+
+  async markListingComplete(
+    freelancerId: string,
+    id: string,
+    files: Express.Multer.File[],
+  ) {
+    const db = new Databases(this.appwriteService.getClient());
+    const doc = await this.appwriteService.getListingDoc(id);
+    if (doc['freelancer']['$id'] != freelancerId) {
+      return HttpStatus.UNAUTHORIZED;
+    }
+    if (!freelancerId) {
+      return HttpStatus.BAD_REQUEST;
+    }
+
+    const uploadPromises = files.map(async (file) => {
+      const f = new File([file.buffer], file.filename);
+      console.log(file.mimetype);
+      const uploaded = await this.appwriteService.uploadCompletionPicture(f);
+      return uploaded['$id'];
     });
+
+    const uploadedFileIds = await Promise.all(uploadPromises);
+    await this.appwriteService.markListingComplete(id, uploadedFileIds);
+    return HttpStatus.OK;
   }
 
   async getListingApplicants(id: string) {
@@ -108,19 +139,7 @@ export class ListingsService {
 
     const dtos = await Promise.all(
       docs.documents.map(async (doc) => {
-        return new ListingDto({
-          id: doc['$id'],
-          title: doc['title'],
-          description: doc['description'],
-          pictures: doc['pictures'],
-          status: doc['status'],
-          lister: doc['lister']['$id'],
-          payment: doc['payment'],
-          longitude: doc['longitude'],
-          latitude: doc['latitude'],
-          applicants: doc['applicants'].map((app) => app['$id']),
-          freelancer: doc['freelancer'] ? doc['freelancer']['$id'] : null,
-        });
+        return this.listingDocToDto(doc);
       }),
     );
 
@@ -132,22 +151,22 @@ export class ListingsService {
 
     const dtos = await Promise.all(
       docs.documents.map(async (doc) => {
-        return new ListingDto({
-          id: doc['$id'],
-          title: doc['title'],
-          description: doc['description'],
-          pictures: doc['pictures'],
-          status: doc['status'],
-          lister: doc['lister']['$id'],
-          payment: doc['payment'],
-          longitude: doc['longitude'],
-          latitude: doc['latitude'],
-          applicants: doc['applicants'].map((app) => app['$id']),
-          freelancer: doc['freelancer'] ? doc['freelancer']['$id'] : null,
-        });
+        return this.listingDocToDto(doc);
       }),
     );
 
     return dtos;
+  }
+
+  async approveCompletion(id: string, userId: string, rating: number) {
+    const db = new Databases(this.appwriteService.getClient());
+    const doc = await this.appwriteService.getListingDoc(id);
+    if (doc['lister']['$id'] != userId) {
+      return HttpStatus.UNAUTHORIZED;
+    }
+    if (!rating) {
+      return HttpStatus.BAD_REQUEST;
+    }
+    return this.appwriteService.markListingApproved(id, rating);
   }
 }

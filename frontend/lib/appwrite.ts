@@ -13,3 +13,9 @@ export function getPictureUrl(id: string) {
   const storage = new Storage(client);
   return storage.getFileDownload("listings", id);
 }
+
+export function getCompletionPictureUrl(id: string) {
+  const client = getAppwriteClient();
+  const storage = new Storage(client);
+  return storage.getFileDownload("completion", id);
+}

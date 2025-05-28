@@ -13,12 +13,25 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { getPictureUrl } from "@/lib/appwrite";
+import { getCompletionPictureUrl, getPictureUrl } from "@/lib/appwrite";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User } from "@/lib/User";
 import { Button } from "@/components/ui/button";
-import { LucideChevronLeft, LucideHeart } from "lucide-react";
+import { LucideChevronLeft, LucideHeart, LucideStar } from "lucide-react";
 import { calculateDistance } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { Textarea } from "@/components/ui/textarea";
 
 interface PicturesCarouselProps {
   pictures: string[];
@@ -78,16 +91,138 @@ function ApplicantCard(props: ApplicantCardProps) {
         <p className="text-xs">male</p>
       </div>
 
-      <Button
-        disabled={disabled}
-        className="bg-blue-900"
-        onClick={() => {
-          selectFreelancer(applicantId);
-        }}
-      >
-        Select
-      </Button>
+      {!disabled && (
+        <Button
+          className="bg-blue-900"
+          onClick={() => {
+            selectFreelancer(applicantId);
+          }}
+        >
+          Select
+        </Button>
+      )}
     </div>
+  );
+}
+
+type ApproveInputs = {
+  rating: number;
+};
+
+interface ApproveButtonProps {
+  listing: ListingDto;
+}
+
+export function ApproveButton(props: ApproveButtonProps) {
+  const { listing } = props;
+  const { watch, register, handleSubmit } = useForm<ApproveInputs>();
+  const onSubmit: SubmitHandler<ApproveInputs> = async (data) => {
+    const res = await backendFetch(
+      "/listings/" + listing.id + "/approve",
+      "POST",
+      "application/json",
+      JSON.stringify(data),
+    );
+    if (res.ok) {
+      window.location.href = "/listings/" + listing.id;
+    }
+  };
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button className="bg-green-700">Approve Completion</Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Approve Completion</DialogTitle>
+          <DialogDescription>Rate this listing's completion</DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <div className="grid gap-5">
+            <div className="flex justify-center gap-2">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <label key={star} className="cursor-pointer">
+                  <input
+                    type="radio"
+                    value={star}
+                    {...register("rating", { required: true })}
+                    className="hidden"
+                  />
+                  <LucideStar
+                    className="w-8 h-8"
+                    stroke="currentColor"
+                    fill={watch("rating") >= star ? "currentColor" : "none"}
+                  />
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <Button type="submit" className="mt-4 text-xs bg-green-700 w-xs h-12">
+            Approve Completion
+          </Button>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+type CompletionInputs = {
+  files: File[];
+};
+
+interface CompletionButtonProps {
+  listing: ListingDto;
+}
+export function CompletionButton(props: CompletionButtonProps) {
+  const { listing } = props;
+  const { register, handleSubmit } = useForm<CompletionInputs>();
+  const onSubmit: SubmitHandler<CompletionInputs> = async (data) => {
+    const formData = new FormData();
+    let fileList = data.files;
+    for (let i = 0; i < fileList.length; i++) {
+      formData.append("files", fileList[i]); // match 'files' field name expected by FilesInterceptor
+    }
+    const res = await backendFetch(
+      "/listings/" + listing.id + "/complete",
+      "POST",
+      null,
+      formData,
+    );
+    if (res.ok) {
+      window.location.href = "/listings/" + listing.id;
+    }
+  };
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button className="bg-green-700">Mark complete</Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Completion Proof</DialogTitle>
+          <DialogDescription>
+            Upload pictures to show that you have completed the work
+          </DialogDescription>
+        </DialogHeader>
+        <form encType="multipart/form-data" onSubmit={handleSubmit(onSubmit)}>
+          <div className="grid gap-5">
+            <div>
+              <Input
+                type="file"
+                multiple={true}
+                accept="image/*"
+                {...register("files")}
+              />
+            </div>
+          </div>
+
+          <Button type="submit" className="mt-4 text-xs bg-green-700 w-xs h-12">
+            Mark Complete
+          </Button>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -123,6 +258,7 @@ export default function ListingPageComponent(props: ListingPageComponentProps) {
   const [applicants, setApplicants] = useState<User[]>([]);
   const [freelancer, setFreelancer] = useState<User | null>(null);
   const [pictures, setPictures] = useState<string[]>([]);
+  const [completionPictures, setCompletionPictures] = useState<string[]>([]);
   const [lister, setLister] = useState<User | null>(null);
   const [userLat, setUserLat] = useState<number | null>(null);
   const [userLong, setUserLong] = useState<number | null>(null);
@@ -159,6 +295,13 @@ export default function ListingPageComponent(props: ListingPageComponentProps) {
       });
       setPictures(pics);
 
+      if (listing.completion_pictures.length > 0) {
+        let pics = listing.completion_pictures.map((pic) => {
+          return getCompletionPictureUrl(pic);
+        });
+        setCompletionPictures(pics);
+      }
+
       const listerRes = await backendFetch(
         "/users/" + listing.lister,
         "GET",
@@ -176,17 +319,17 @@ export default function ListingPageComponent(props: ListingPageComponentProps) {
         );
         const applicantsJson = await applicantsRes.json();
         setApplicants(applicantsJson as User[]);
-
-        let pos = navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            setUserLat(pos.coords.latitude);
-            setUserLong(pos.coords.longitude);
-          },
-          (e) => {
-            console.log(e);
-          },
-        );
       }
+
+      let pos = navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setUserLat(pos.coords.latitude);
+          setUserLong(pos.coords.longitude);
+        },
+        (e) => {
+          console.log(e);
+        },
+      );
 
       if (listing.freelancer) {
         const freelancerRes = await backendFetch(
@@ -196,7 +339,6 @@ export default function ListingPageComponent(props: ListingPageComponentProps) {
         );
         const freelancerJson = await freelancerRes.json();
         const freelancer = freelancerJson as User;
-        console.log(freelancer);
         setFreelancer(freelancer);
       }
     })();
@@ -261,6 +403,12 @@ export default function ListingPageComponent(props: ListingPageComponentProps) {
           </div>
         )}
 
+        {(listing.status == "AWAITREVIEW" || listing.status == "COMPLETED") && (
+          <div className="mt-4">
+            <p className="text-lg font-semibold">Completion Proofs</p>
+            <PicturesCarousel pictures={completionPictures} />
+          </div>
+        )}
         {listing.lister == user.appwrite["$id"] && applicants.length != 0 && (
           <div className="mt-4">
             <p className="text-lg font-semibold">Applicants</p>
@@ -307,10 +455,27 @@ export default function ListingPageComponent(props: ListingPageComponentProps) {
                 Apply
               </Button>
             ))}
+
           {listing.status == "INPROGRESS" &&
             listing.freelancer == user.appwrite["$id"] && (
-              <Button className="bg-green-700">Mark complete</Button>
+              <CompletionButton listing={listing} />
             )}
+
+          {listing.status == "AWAITREVIEW" &&
+            listing.freelancer == user.appwrite["$id"] && (
+              <Button disabled={true} className="bg-blue-900 text-xs h-12">
+                Awaiting review
+              </Button>
+            )}
+
+          {listing.status == "AWAITREVIEW" &&
+            listing.lister == user.appwrite["$id"] && (
+              <ApproveButton listing={listing} />
+            )}
+
+          {listing.status == "COMPLETED" && (
+            <p className="text-green-700 font-bold">COMPLETED</p>
+          )}
         </div>
       </div>
     </div>

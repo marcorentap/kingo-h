@@ -4,6 +4,7 @@ export class ListingDto {
     readonly title: string,
     readonly description: string,
     readonly pictures: string[],
+    readonly completion_pictures: string[],
     readonly status:
       | "LISTED"
       | "INPROGRESS"
