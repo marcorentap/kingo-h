@@ -77,7 +77,6 @@ export default function CreateListingsPage() {
   const { user } = useContext(UserContext);
   const { register, handleSubmit } = useForm<CreateListingInputs>();
   const router = useRouter();
-  const gmapKey = process.env.NEXT_PUBLIC_GMAP_KEY;
 
   const [selectedLocation, setSelectedLocation] = useState({
     lat: null,
@@ -149,7 +148,7 @@ export default function CreateListingsPage() {
 
           <div>
             Select Location
-            <LocationPicker onSelect={setSelectedLocation} />
+            {window.google && <LocationPicker onSelect={setSelectedLocation} />}
           </div>
 
           <div>
@@ -165,10 +164,6 @@ export default function CreateListingsPage() {
           Submit
         </Button>
       </form>
-
-      <script
-        src={"https://maps.googleapis.com/maps/api/js?key=" + gmapKey}
-      ></script>
     </>
   );
 }

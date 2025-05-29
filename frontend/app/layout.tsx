@@ -53,6 +53,8 @@ export default function RootLayout({
     })();
   }, []);
 
+  const gmapKey = process.env.NEXT_PUBLIC_GMAP_KEY;
+
   return (
     <UserContext.Provider value={{ user, setUser, loading }}>
       <html lang="en">
@@ -60,6 +62,11 @@ export default function RootLayout({
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
           <div className="max-w-xs mx-auto">{children}</div>
+          <script
+            src={"https://maps.googleapis.com/maps/api/js?key=" + gmapKey}
+            defer
+            async
+          ></script>
         </body>
       </html>
     </UserContext.Provider>

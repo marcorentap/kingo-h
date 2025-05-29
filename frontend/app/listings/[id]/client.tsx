@@ -4,7 +4,7 @@ import { UserContext } from "@/app/UserContext";
 import { backendFetch } from "@/lib/backend";
 import { ListingDto } from "@/lib/Listing";
 import { useRouter } from "next/navigation";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Carousel,
@@ -18,7 +18,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User } from "@/lib/User";
 import { Button } from "@/components/ui/button";
 import { LucideChevronLeft, LucideHeart, LucideStar } from "lucide-react";
-import { calculateDistance } from "@/lib/utils";
+import { calculateDistance, TimeAgo } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -32,6 +32,40 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { Textarea } from "@/components/ui/textarea";
+
+declare global {
+  interface Window {
+    google: any;
+  }
+}
+
+export function LocationMap({ lat, lng }) {
+  const mapRef = useRef(null);
+
+  useEffect(() => {
+    if (!window.google) return;
+
+    const map = new window.google.maps.Map(mapRef.current, {
+      center: { lat, lng },
+      zoom: 14,
+      disableDefaultUI: true,
+      mapTypeControl: false,
+      streetViewControl: false,
+      fullscreenControl: false,
+    });
+
+    new window.google.maps.Marker({
+      position: { lat, lng },
+      map,
+    });
+  }, [lat, lng]);
+
+  return (
+    <div className="w-full h-64 border rounded-lg overflow-hidden">
+      <div ref={mapRef} className="w-full h-full"></div>
+    </div>
+  );
+}
 
 interface PicturesCarouselProps {
   pictures: string[];
@@ -349,138 +383,148 @@ export default function ListingPageComponent(props: ListingPageComponentProps) {
   }
 
   return (
-    <div className="mx-auto">
-      <button
-        onClick={() => router.back()}
-        className="fixed top-4 left-4 z-10 p-1 bg-black/50 rounded-full "
-      >
-        <div>
-          <LucideChevronLeft className="w-5 h-5 text-white" />
-        </div>
-      </button>
-
+    <>
       <div className="mx-auto">
-        <PicturesCarousel pictures={pictures!} />
-
-        <div className="flex mt-4 w-full">
-          <Avatar className="w-10 h-auto">
-            <AvatarImage src={lister?.profile_picture} />
-            <AvatarFallback>
-              <img src="/default_avatar.png" />
-            </AvatarFallback>
-          </Avatar>
-
-          <div className="ml-2 w-full">
-            <p className="text-sm font-semibold">{lister?.name}</p>
-            <p className="text-xs">male</p>
+        <button
+          onClick={() => router.back()}
+          className="fixed top-4 left-4 z-10 p-1 bg-black/50 rounded-full "
+        >
+          <div>
+            <LucideChevronLeft className="w-5 h-5 text-white" />
           </div>
-        </div>
+        </button>
 
-        <p className="text-lg font-semibold">{listing.title}</p>
-        <div>
-          <div className="flex gap-2">
-            {userLat && userLong && (
+        <div className="mx-auto">
+          <PicturesCarousel pictures={pictures!} />
+
+          <div className="flex mt-4 w-full">
+            <Avatar className="w-10 h-auto">
+              <AvatarImage src={lister?.profile_picture} />
+              <AvatarFallback>
+                <img src="/default_avatar.png" />
+              </AvatarFallback>
+            </Avatar>
+
+            <div className="ml-2 w-full">
+              <p className="text-sm font-semibold">{lister?.name}</p>
+              <p className="text-xs">male</p>
+            </div>
+          </div>
+
+          <p className="text-lg font-semibold">{listing.title}</p>
+          <div>
+            <div className="flex gap-2">
+              {userLat && userLong && (
+                <p className="text-xs">
+                  {Math.trunc(
+                    calculateDistance(
+                      listing.latitude,
+                      listing.longitude,
+                      userLat,
+                      userLong,
+                    ),
+                  )}
+                  m
+                </p>
+              )}
+
               <p className="text-xs">
-                {Math.trunc(
-                  calculateDistance(
-                    listing.latitude,
-                    listing.longitude,
-                    userLat,
-                    userLong,
-                  ),
-                )}
-                m
+                <TimeAgo timestamp={new Date(listing.created_at)} /> ago
               </p>
-            )}
-
-            <p className="text-xs">
-              <TimeAgo timestamp={new Date(listing.created_at)} /> ago
-            </p>
-          </div>
-        </div>
-
-        {freelancer && (
-          <div className="mt-4">
-            <p className="text-lg font-semibold">Freelancer</p>
-            <FreelancerCard freelancer={freelancer} />
-          </div>
-        )}
-
-        {(listing.status == "AWAITREVIEW" || listing.status == "COMPLETED") && (
-          <div className="mt-4">
-            <p className="text-lg font-semibold">Completion Proofs</p>
-            <PicturesCarousel pictures={completionPictures} />
-          </div>
-        )}
-        {listing.lister == user.appwrite["$id"] && applicants.length != 0 && (
-          <div className="mt-4">
-            <p className="text-lg font-semibold">Applicants</p>
-            {applicants.map((app, i) => {
-              return (
-                <ApplicantCard
-                  listing={listing}
-                  applicant={app}
-                  applicantId={listing.applicants[i]}
-                  disabled={listing.status != "LISTED"}
-                />
-              );
-            })}
-          </div>
-        )}
-
-        <div className="mt-4">
-          <p className="whitespace-pre-wrap">{listing.description}</p>
-        </div>
-
-        <div className="h-32"></div>
-        <div className="flex fixed bottom-0 left-0 w-full bg-white p-4 justify-start gap-4 items-center border-t">
-          <div className="text-gray-500">
-            <LucideHeart className="w-10 h-auto" />
-          </div>
-          <div className="grow">
-            <p className="font-bold text-lg">
-              {listing.payment.toLocaleString()} won
-            </p>
-            <p className="text-gray-500 text-xs">Non-negotiable</p>
+            </div>
           </div>
 
-          {listing.status == "LISTED" &&
-            listing.lister != user.appwrite["$id"] &&
-            (listing.applicants?.includes(user.appwrite["$id"]) ? (
-              <Button disabled={true} className="bg-blue-900 text-xs h-12">
-                Already applied
-              </Button>
-            ) : (
-              <Button
-                onClick={applyToListing}
-                className="bg-blue-900 text-xs h-12"
-              >
-                Apply
-              </Button>
-            ))}
-
-          {listing.status == "INPROGRESS" &&
-            listing.freelancer == user.appwrite["$id"] && (
-              <CompletionButton listing={listing} />
-            )}
-
-          {listing.status == "AWAITREVIEW" &&
-            listing.freelancer == user.appwrite["$id"] && (
-              <Button disabled={true} className="bg-blue-900 text-xs h-12">
-                Awaiting review
-              </Button>
-            )}
-
-          {listing.status == "AWAITREVIEW" &&
-            listing.lister == user.appwrite["$id"] && (
-              <ApproveButton listing={listing} />
-            )}
-
-          {listing.status == "COMPLETED" && (
-            <p className="text-green-700 font-bold">COMPLETED</p>
+          {freelancer && (
+            <div className="mt-4">
+              <p className="text-lg font-semibold">Freelancer</p>
+              <FreelancerCard freelancer={freelancer} />
+            </div>
           )}
+
+          {(listing.status == "AWAITREVIEW" ||
+            listing.status == "COMPLETED") && (
+            <div className="mt-4">
+              <p className="text-lg font-semibold">Completion Proofs</p>
+              <PicturesCarousel pictures={completionPictures} />
+            </div>
+          )}
+          {listing.lister == user.appwrite["$id"] && applicants.length != 0 && (
+            <div className="mt-4">
+              <p className="text-lg font-semibold">Applicants</p>
+              {applicants.map((app, i) => {
+                return (
+                  <ApplicantCard
+                    listing={listing}
+                    applicant={app}
+                    applicantId={listing.applicants[i]}
+                    disabled={listing.status != "LISTED"}
+                  />
+                );
+              })}
+            </div>
+          )}
+
+          <div className="mt-4">
+            <p className="whitespace-pre-wrap">{listing.description}</p>
+          </div>
+
+          <div className="mt-4">
+            <p className="text-lg font-semibold">Location</p>
+            {window.google && (
+              <LocationMap lat={listing.latitude} lng={listing.longitude} />
+            )}
+          </div>
+
+          <div className="h-32"></div>
+          <div className="flex fixed bottom-0 left-0 w-full bg-white p-4 justify-start gap-4 items-center border-t">
+            <div className="text-gray-500">
+              <LucideHeart className="w-10 h-auto" />
+            </div>
+            <div className="grow">
+              <p className="font-bold text-lg">
+                {listing.payment.toLocaleString()} won
+              </p>
+              <p className="text-gray-500 text-xs">Non-negotiable</p>
+            </div>
+
+            {listing.status == "LISTED" &&
+              listing.lister != user.appwrite["$id"] &&
+              (listing.applicants?.includes(user.appwrite["$id"]) ? (
+                <Button disabled={true} className="bg-blue-900 text-xs h-12">
+                  Already applied
+                </Button>
+              ) : (
+                <Button
+                  onClick={applyToListing}
+                  className="bg-blue-900 text-xs h-12"
+                >
+                  Apply
+                </Button>
+              ))}
+
+            {listing.status == "INPROGRESS" &&
+              listing.freelancer == user.appwrite["$id"] && (
+                <CompletionButton listing={listing} />
+              )}
+
+            {listing.status == "AWAITREVIEW" &&
+              listing.freelancer == user.appwrite["$id"] && (
+                <Button disabled={true} className="bg-blue-900 text-xs h-12">
+                  Awaiting review
+                </Button>
+              )}
+
+            {listing.status == "AWAITREVIEW" &&
+              listing.lister == user.appwrite["$id"] && (
+                <ApproveButton listing={listing} />
+              )}
+
+            {listing.status == "COMPLETED" && (
+              <p className="text-green-700 font-bold">COMPLETED</p>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
