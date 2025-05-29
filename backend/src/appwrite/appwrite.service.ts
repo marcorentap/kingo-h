@@ -90,13 +90,20 @@ export class AppwriteService {
     });
   }
 
-  async getUserListingDocs(userId: string, limit: number, offset: number) {
+  async getUserListingDocs(userId: string, limit?: number, offset?: number) {
     const db = new Databases(this.client);
-    return await db.listDocuments(this.dbId, 'listings', [
-      Query.limit(limit),
-      Query.offset(offset),
-      Query.equal('lister', userId),
-    ]);
+
+    const queries = [Query.equal('lister', userId)];
+
+    if (limit !== undefined) {
+      queries.push(Query.limit(limit));
+    }
+
+    if (offset !== undefined) {
+      queries.push(Query.offset(offset));
+    }
+
+    return await db.listDocuments(this.dbId, 'listings', queries);
   }
 
   async getCanonicalListingPictureUrl(id: string) {
