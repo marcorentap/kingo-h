@@ -13,7 +13,7 @@ import Link from "next/link";
 import { backendFetch } from "@/lib/backend";
 import { ListingDto } from "@/lib/Listing";
 import { getPictureUrl } from "@/lib/appwrite";
-import { calculateDistance } from "@/lib/utils";
+import { calculateDistance, TimeAgo } from "@/lib/utils";
 import { ID } from "appwrite";
 
 interface ListingCardProps {
@@ -50,7 +50,9 @@ function ListingCard(props: ListingCardProps) {
                 )}
               m
             </p>
-            <p className="text-xs text-gray-500">2 minutes ago</p>
+            <p className="text-xs text-gray-500">
+              <TimeAgo timestamp={new Date(listing.created_at)} /> ago
+            </p>
           </div>
           <div>
             <p className="font-bold text-lg">

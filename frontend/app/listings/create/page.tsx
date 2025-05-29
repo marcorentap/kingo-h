@@ -20,11 +20,17 @@ type CreateListingInputs = {
   files: File[];
 };
 
-export function LocationPicker({ onSelect }) {
+declare global {
+  interface Window {
+    google: any;
+  }
+}
+
+function LocationPicker({ onSelect }) {
   const mapRef = useRef(null);
 
   useEffect(() => {
-    if (!window.google) return;
+    if (!window.google!) return;
 
     navigator.geolocation.getCurrentPosition(
       (position) => {

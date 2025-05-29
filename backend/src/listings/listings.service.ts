@@ -10,6 +10,7 @@ export class ListingsService {
   constructor(readonly appwriteService: AppwriteService) {}
 
   listingDocToDto(doc: Models.Document) {
+    console.log(doc);
     return new ListingDto({
       id: doc['$id'],
       title: doc['title'],
@@ -24,6 +25,7 @@ export class ListingsService {
       latitude: doc['latitude'],
       applicants: doc['applicants'].map((app) => app['$id']),
       freelancer: doc['freelancer'] ? doc['freelancer']['$id'] : null,
+      created_at: new Date(doc['$createdAt']),
     });
   }
 

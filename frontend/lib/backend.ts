@@ -1,6 +1,5 @@
 import { Account } from "appwrite";
 import { getAppwriteClient } from "./appwrite";
-import { relative } from "path/win32";
 
 export async function backendFetch(
   relativeUrl: string,

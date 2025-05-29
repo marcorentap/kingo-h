@@ -392,7 +392,10 @@ export default function ListingPageComponent(props: ListingPageComponentProps) {
                 m
               </p>
             )}
-            <p className="text-xs">2 minutes ago</p>
+
+            <p className="text-xs">
+              <TimeAgo timestamp={new Date(listing.created_at)} /> ago
+            </p>
           </div>
         </div>
 
