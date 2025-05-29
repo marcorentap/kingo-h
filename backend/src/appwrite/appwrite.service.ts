@@ -90,11 +90,7 @@ export class AppwriteService {
     });
   }
 
-  async getUserListingDocs(
-    userId: string,
-    limit: number = 25,
-    offset: number = 0,
-  ) {
+  async getUserListingDocs(userId: string, limit: number, offset: number) {
     const db = new Databases(this.client);
     return await db.listDocuments(this.dbId, 'listings', [
       Query.limit(limit),
