@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect, useContext, useMemo, useRef } from "react";
 import { UserContext } from "@/app/UserContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -9,8 +10,8 @@ import { backendFetch } from "@/lib/backend";
 import { LucideHome } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useContext } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
+import dynamic from "next/dynamic";
 
 type CreateListingInputs = {
   title: string;
@@ -19,10 +20,63 @@ type CreateListingInputs = {
   files: File[];
 };
 
+export function LocationPicker({ onSelect }) {
+  const mapRef = useRef(null);
+
+  useEffect(() => {
+    if (!window.google) return;
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const initialLat = position.coords.latitude;
+        const initialLng = position.coords.longitude;
+
+        const map = new window.google.maps.Map(mapRef.current, {
+          center: { lat: initialLat, lng: initialLng },
+          zoom: 14,
+          disableDefaultUI: true, // remove extra controls
+          mapTypeControl: false,
+          streetViewControl: false,
+          fullscreenControl: false,
+        });
+
+        let marker = new window.google.maps.Marker({
+          position: { lat: initialLat, lng: initialLng },
+          map,
+        });
+
+        onSelect({ lat: initialLat, lng: initialLng });
+
+        map.addListener("click", (e) => {
+          const lat = e.latLng.lat();
+          const lng = e.latLng.lng();
+          marker.setPosition({ lat, lng });
+          onSelect({ lat, lng });
+        });
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+      },
+    );
+  }, [onSelect]);
+
+  return (
+    <div className="w-full h-64 border rounded-lg overflow-hidden">
+      <div ref={mapRef} className="w-full h-full"></div>
+    </div>
+  );
+}
+
 export default function CreateListingsPage() {
   const { user } = useContext(UserContext);
   const { register, handleSubmit } = useForm<CreateListingInputs>();
   const router = useRouter();
+  const gmapKey = process.env.NEXT_PUBLIC_GMAP_KEY;
+
+  const [selectedLocation, setSelectedLocation] = useState({
+    lat: null,
+    lng: null,
+  });
 
   const onSubmit: SubmitHandler<CreateListingInputs> = async (data) => {
     const formData = new FormData();
@@ -32,18 +86,13 @@ export default function CreateListingsPage() {
 
     let fileList = data.files;
     for (let i = 0; i < fileList.length; i++) {
-      formData.append("files", fileList[i]); // match 'files' field name expected by FilesInterceptor
+      formData.append("files", fileList[i]);
     }
 
-    let pos = navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        formData.append("longitude", pos.coords.longitude.toString());
-        formData.append("latitude", pos.coords.latitude.toString());
-      },
-      (e) => {
-        console.log(e);
-      },
-    );
+    if (selectedLocation.lat !== null && selectedLocation.lng !== null) {
+      formData.append("latitude", selectedLocation.lat.toString());
+      formData.append("longitude", selectedLocation.lng.toString());
+    }
 
     const res = await backendFetch("/listings", "POST", null, formData);
     if (res.ok) {
@@ -91,6 +140,12 @@ export default function CreateListingsPage() {
               {...register("files")}
             />
           </div>
+
+          <div>
+            Select Location
+            <LocationPicker onSelect={setSelectedLocation} />
+          </div>
+
           <div>
             Payment
             <div className="flex items-center">
@@ -104,6 +159,10 @@ export default function CreateListingsPage() {
           Submit
         </Button>
       </form>
+
+      <script
+        src={"https://maps.googleapis.com/maps/api/js?key=" + gmapKey}
+      ></script>
     </>
   );
 }

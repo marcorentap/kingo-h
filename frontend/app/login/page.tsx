@@ -9,7 +9,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useContext, useEffect, useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
-import LoginLayout from "./layout";
 
 type LoginInputs = {
   email: string;

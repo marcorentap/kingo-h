@@ -426,7 +426,7 @@ export default function ListingPageComponent(props: ListingPageComponentProps) {
         )}
 
         <div className="mt-4">
-          <p>{listing.description}</p>
+          <p className="whitespace-pre-wrap">{listing.description}</p>
         </div>
 
         <div className="h-32"></div>
