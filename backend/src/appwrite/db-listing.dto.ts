@@ -10,6 +10,13 @@ export class DBListingDto {
     'LISTED';
   readonly applicants?: string[];
   readonly freelancer?: string;
+  readonly category:
+    | 'Labor'
+    | 'Transport'
+    | 'Care'
+    | 'Technical'
+    | 'Support'
+    | 'Other';
 
   constructor(partial: Partial<DBListingDto>) {
     Object.assign(this, partial);

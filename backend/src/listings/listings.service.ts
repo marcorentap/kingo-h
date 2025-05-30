@@ -36,6 +36,13 @@ export class ListingsService {
     longitude: number,
     latitude: number,
     payment: number,
+    category:
+      | 'Labor'
+      | 'Transport'
+      | 'Care'
+      | 'Technical'
+      | 'Support'
+      | 'Other',
     files: Express.Multer.File[],
   ) {
     const uploadPromises = files.map(async (file) => {
@@ -55,6 +62,7 @@ export class ListingsService {
         latitude: latitude,
         longitude: longitude,
         payment: payment,
+        category: category,
         pictures: uploadedFileIds,
       }),
     );

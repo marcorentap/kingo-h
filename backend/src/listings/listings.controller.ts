@@ -41,6 +41,7 @@ export class ListingsController {
       Number(form.longitude),
       Number(form.latitude),
       Number(form.payment),
+      form.category,
       files,
     );
   }

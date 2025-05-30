@@ -11,6 +11,13 @@ export class ListingDto {
   readonly longitude: number;
   readonly latitude: number;
   readonly created_at: Date;
+  readonly category:
+    | "Labor"
+    | "Transport"
+    | "Care"
+    | "Technical"
+    | "Support"
+    | "Other";
   readonly comments?: [];
   readonly applicants?: string[];
   readonly freelancer?: string;

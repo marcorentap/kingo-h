@@ -10,12 +10,22 @@ import { backendFetch } from "@/lib/backend";
 import { LucideHome } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { SubmitHandler, useForm } from "react-hook-form";
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type CreateListingInputs = {
   title: string;
   description: string;
   payment: number;
+  category: "Labor" | "Transport" | "Care" | "Technical" | "Support" | "Other";
   files: File[];
 };
 
@@ -75,7 +85,7 @@ function LocationPicker({ onSelect }) {
 
 export default function CreateListingsPage() {
   const { user } = useContext(UserContext);
-  const { register, handleSubmit } = useForm<CreateListingInputs>();
+  const { register, handleSubmit, control } = useForm<CreateListingInputs>();
   const router = useRouter();
 
   const [selectedLocation, setSelectedLocation] = useState({
@@ -95,6 +105,7 @@ export default function CreateListingsPage() {
     const formData = new FormData();
     formData.append("title", data.title);
     formData.append("description", data.description);
+    formData.append("category", data.category);
     formData.append("payment", data.payment.toString());
 
     let fileList = data.files;
@@ -137,6 +148,30 @@ export default function CreateListingsPage() {
             <Input placeholder="Enter listing title" {...register("title")} />
           </div>
           <div>
+            Category
+            <Controller
+              name="category"
+              control={control}
+              render={({ field }) => (
+                /* <Select {...register("category", { required: true })}> */
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value="Labor">Labor</SelectItem>
+                      <SelectItem value="Transport">Transport</SelectItem>
+                      <SelectItem value="Care">Care</SelectItem>
+                      <SelectItem value="Technical">Technical</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              )}
+            />
+          </div>
+          <div>
             Description
             <Textarea
               className="h-32"
@@ -170,7 +205,7 @@ export default function CreateListingsPage() {
           </div>
         </div>
 
-        <Button type="submit" className="mt-4 text-xs bg-blue-900 w-xs h-12">
+        <Button type="submit" className="my-4 text-xs bg-blue-900 w-xs h-12">
           Submit
         </Button>
       </form>

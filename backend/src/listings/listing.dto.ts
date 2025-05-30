@@ -15,6 +15,13 @@ export class ListingDto {
   readonly comments?: [];
   readonly applicants?: string[];
   readonly freelancer?: string;
+  readonly category:
+    | 'Labor'
+    | 'Transport'
+    | 'Care'
+    | 'Technical'
+    | 'Support'
+    | 'Other';
   constructor(partial: Partial<ListingDto>) {
     Object.assign(this, partial);
   }

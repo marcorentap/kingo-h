@@ -269,7 +269,10 @@ export function ApproveButton(props: ApproveButtonProps) {
             </div>
           </div>
 
-          <Button type="submit" className="mt-4 text-xs bg-green-700 w-xs h-12">
+          <Button
+            type="submit"
+            className="mt-4 text-xs bg-green-700 w-full h-12"
+          >
             Approve Completion
           </Button>
         </form>
@@ -328,7 +331,10 @@ export function CompletionButton(props: CompletionButtonProps) {
             </div>
           </div>
 
-          <Button type="submit" className="mt-4 text-xs bg-green-700 w-xs h-12">
+          <Button
+            type="submit"
+            className="mt-4 text-xs w-full bg-green-700 h-12"
+          >
             Mark Complete
           </Button>
         </form>
@@ -576,9 +582,11 @@ export default function ListingPageComponent(props: ListingPageComponentProps) {
               {comments.length} {comments.length == 1 ? "Comment" : "Comments"}
             </p>
             <CommentForm listing={listing} />
-            {comments.map((com) => {
-              return <CommentCard comment={com} />;
-            })}
+            <div className="mt-8">
+              {comments.map((com) => {
+                return <CommentCard comment={com} />;
+              })}
+            </div>
           </div>
 
           {/* Footer */}

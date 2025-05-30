@@ -4,6 +4,13 @@ export class CreateListingDto {
   readonly payment: number;
   readonly longitude: number;
   readonly latitude: number;
+  readonly category:
+    | 'Labor'
+    | 'Transport'
+    | 'Care'
+    | 'Technical'
+    | 'Support'
+    | 'Other';
   readonly files: File[];
 
   constructor(partial: Partial<CreateListingDto>) {
