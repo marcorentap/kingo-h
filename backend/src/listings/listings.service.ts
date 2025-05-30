@@ -23,6 +23,7 @@ export class ListingsService {
       longitude: doc['longitude'],
       latitude: doc['latitude'],
       comments: doc['comments'],
+      category: doc['category'],
       applicants: doc['applicants'].map((app) => app['$id']),
       freelancer: doc['freelancer'] ? doc['freelancer']['$id'] : null,
       created_at: new Date(doc['$createdAt']),

@@ -380,6 +380,7 @@ export default function ListingPageComponent(props: ListingPageComponentProps) {
   const [userLat, setUserLat] = useState<number | null>(null);
   const [userLong, setUserLong] = useState<number | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
+  const [distanceM, setDistanceM] = useState<number>(0);
   const router = useRouter();
 
   async function applyToListing() {
@@ -442,6 +443,14 @@ export default function ListingPageComponent(props: ListingPageComponentProps) {
         (pos) => {
           setUserLat(pos.coords.latitude);
           setUserLong(pos.coords.longitude);
+          setDistanceM(
+            calculateDistance(
+              listing.latitude,
+              listing.longitude,
+              pos.coords.latitude,
+              pos.coords.longitude,
+            ),
+          );
         },
         (e) => {
           console.log(e);
@@ -513,20 +522,22 @@ export default function ListingPageComponent(props: ListingPageComponentProps) {
             </div>
           </div>
 
-          <p className="text-lg font-semibold">{listing.title}</p>
+          <div className="flex justify-between">
+            <p className="text-lg font-semibold">{listing.title}</p>
+            <div className="bg-gray-300 p-1.5 rounded-full flex items-center">
+              <p className="text-xs font-semibold leading-none">
+                {listing.category}
+              </p>
+            </div>
+          </div>
           <div>
             <div className="flex gap-2">
               {userLat && userLong && (
                 <p className="text-xs">
-                  {Math.trunc(
-                    calculateDistance(
-                      listing.latitude,
-                      listing.longitude,
-                      userLat,
-                      userLong,
-                    ),
-                  )}
-                  m
+                  {userLat && userLong && distanceM > 1000
+                    ? (distanceM / 1000).toPrecision(2)
+                    : Math.trunc(distanceM)}
+                  {distanceM > 1000 ? "km" : "m"}
                 </p>
               )}
 

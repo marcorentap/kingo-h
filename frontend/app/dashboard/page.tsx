@@ -35,6 +35,7 @@ export default function HomePage() {
       const res = await backendFetch("/listings", "GET", "application/json");
       const j = await res.json();
       let ls: ListingDto[] = j as ListingDto[];
+      console.log(ls);
       setListings(ls);
 
       let pos = navigator.geolocation.getCurrentPosition(
