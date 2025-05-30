@@ -8,10 +8,11 @@ import { JwtModule } from '@nestjs/jwt';
 import { AppwriteModule } from './appwrite/appwrite.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ListingsModule } from './listings/listings.module';
+import { CommentsModule } from './comments/comments.module';
 
 @Module({
   controllers: [AppController, UsersController],
   providers: [AppService, UsersService],
-  imports: [UsersModule, JwtModule, AppwriteModule, ConfigModule.forRoot(), ListingsModule],
+  imports: [UsersModule, JwtModule, AppwriteModule, ConfigModule.forRoot(), ListingsModule, CommentsModule],
 })
 export class AppModule {}

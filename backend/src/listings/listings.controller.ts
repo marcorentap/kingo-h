@@ -18,6 +18,7 @@ import { TokenGuard } from 'src/token-guard/token-guard.guard';
 import { SelectFreelancerDto } from './select-freelancer.dto';
 import { MarkListingCompleteDto } from './mark-listing-complete.dto';
 import { ApproveCompletionDto } from './approve-completion.dto';
+import { CreateCommentDto } from './create-comment.dto';
 const { InputFile } = require('node-appwrite/file');
 
 @Controller('listings')
@@ -113,6 +114,20 @@ export class ListingsController {
       id,
       req['userId'],
       form.rating,
+    );
+  }
+
+  @Post('/:id/comment')
+  @UseGuards(TokenGuard)
+  async AddCommentToListing(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() form: CreateCommentDto,
+  ) {
+    return await this.listingService.addCommentToListing(
+      id,
+      req['userId'],
+      form.comment,
     );
   }
 }

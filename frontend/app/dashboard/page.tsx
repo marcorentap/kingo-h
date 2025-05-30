@@ -60,8 +60,10 @@ function ListingCard(props: ListingCardProps) {
             </p>
           </div>
         </div>
-        <div className="flex justify-end">
-          <p className="text-xs">N</p>
+        <div className="flex justify-end items-center">
+          <p className="text-xs mr-1 font-semibold leading-none">
+            {listing.comments?.length}
+          </p>
           <LucideMessageSquare className="w-5" />
         </div>
       </div>

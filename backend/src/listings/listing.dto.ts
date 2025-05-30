@@ -12,6 +12,7 @@ export class ListingDto {
   readonly longitude: number;
   readonly latitude: number;
   readonly created_at: Date;
+  readonly comments?: [];
   readonly applicants?: string[];
   readonly freelancer?: string;
   constructor(partial: Partial<ListingDto>) {

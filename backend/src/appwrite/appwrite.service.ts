@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { Client, Databases, ID, Query, Storage } from 'node-appwrite';
 import { DBUserDto } from './db-user.dto';
 import { DBListingDto } from './db-listing.dto';
+import { CommentDto } from 'src/comments/comment.dto';
 
 @Injectable()
 export class AppwriteService {
@@ -22,6 +23,16 @@ export class AppwriteService {
 
   getClient(): Client {
     return this.client;
+  }
+
+  async getComment(commentId: string) {
+    const db = new Databases(this.client);
+    const doc = await db.getDocument(this.dbId, 'comments', commentId);
+    return new CommentDto({
+      id: doc['$id'],
+      user: doc['user'],
+      comment: doc['comment'],
+    });
   }
 
   async getUser(userId: string) {
@@ -138,6 +149,25 @@ export class AppwriteService {
     return await db.updateDocument(this.dbId, 'listings', id, {
       status: 'COMPLETED',
       rating: Number(rating),
+    });
+  }
+
+  async addCommentToListing(id: string, commentId: string) {
+    const listing = await this.getListingDoc(id);
+    let comments = listing['comments'];
+    comments.push(commentId);
+
+    const db = new Databases(this.client);
+    return await db.updateDocument(this.dbId, 'listings', id, {
+      comments: comments,
+    });
+  }
+
+  async createComment(userId: string, comment: string) {
+    const db = new Databases(this.client);
+    return await db.createDocument(this.dbId, 'comments', ID.unique(), {
+      user: userId,
+      comment: comment,
     });
   }
 }

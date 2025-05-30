@@ -10,7 +10,6 @@ export class ListingsService {
   constructor(readonly appwriteService: AppwriteService) {}
 
   listingDocToDto(doc: Models.Document) {
-    console.log(doc);
     return new ListingDto({
       id: doc['$id'],
       title: doc['title'],
@@ -23,6 +22,7 @@ export class ListingsService {
       payment: doc['payment'],
       longitude: doc['longitude'],
       latitude: doc['latitude'],
+      comments: doc['comments'],
       applicants: doc['applicants'].map((app) => app['$id']),
       freelancer: doc['freelancer'] ? doc['freelancer']['$id'] : null,
       created_at: new Date(doc['$createdAt']),
@@ -101,7 +101,6 @@ export class ListingsService {
 
     const uploadPromises = files.map(async (file) => {
       const f = new File([file.buffer], file.filename);
-      console.log(file.mimetype);
       const uploaded = await this.appwriteService.uploadCompletionPicture(f);
       return uploaded['$id'];
     });
@@ -170,5 +169,16 @@ export class ListingsService {
       return HttpStatus.BAD_REQUEST;
     }
     return this.appwriteService.markListingApproved(id, rating);
+  }
+
+  async addCommentToListing(id: string, userId: string, comment: string) {
+    const commentDoc = await this.appwriteService.createComment(
+      userId,
+      comment,
+    );
+    return await this.appwriteService.addCommentToListing(
+      id,
+      commentDoc['$id'],
+    );
   }
 }

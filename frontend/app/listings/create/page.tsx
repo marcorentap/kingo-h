@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useContext, useMemo, useRef } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import { UserContext } from "@/app/UserContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,6 @@ import { LucideHome } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { SubmitHandler, useForm } from "react-hook-form";
-import dynamic from "next/dynamic";
 
 type CreateListingInputs = {
   title: string;
@@ -30,7 +29,8 @@ function LocationPicker({ onSelect }) {
   const mapRef = useRef(null);
 
   useEffect(() => {
-    if (!window.google!) return;
+    if (typeof window === "undefined" || !window.google || !mapRef.current)
+      return;
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -40,7 +40,7 @@ function LocationPicker({ onSelect }) {
         const map = new window.google.maps.Map(mapRef.current, {
           center: { lat: initialLat, lng: initialLng },
           zoom: 14,
-          disableDefaultUI: true, // remove extra controls
+          disableDefaultUI: true,
           mapTypeControl: false,
           streetViewControl: false,
           fullscreenControl: false,
@@ -82,6 +82,14 @@ export default function CreateListingsPage() {
     lat: null,
     lng: null,
   });
+
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setIsClient(true);
+    }
+  }, []);
 
   const onSubmit: SubmitHandler<CreateListingInputs> = async (data) => {
     const formData = new FormData();
@@ -148,7 +156,9 @@ export default function CreateListingsPage() {
 
           <div>
             Select Location
-            {window.google && <LocationPicker onSelect={setSelectedLocation} />}
+            {isClient && window.google && (
+              <LocationPicker onSelect={setSelectedLocation} />
+            )}
           </div>
 
           <div>
