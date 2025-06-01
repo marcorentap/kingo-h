@@ -20,6 +20,7 @@ import { SelectFreelancerDto } from './select-freelancer.dto';
 import { MarkListingCompleteDto } from './mark-listing-complete.dto';
 import { ApproveCompletionDto } from './approve-completion.dto';
 import { CreateCommentDto } from './create-comment.dto';
+import { CreateChatDto } from './create-chat.dto';
 const { InputFile } = require('node-appwrite/file');
 
 @Controller('listings')
@@ -142,5 +143,25 @@ export class ListingsController {
       req['userId'],
       form.comment,
     );
+  }
+
+  @Post('/:id/chats')
+  @UseGuards(TokenGuard)
+  async AddChatToListing(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() form: CreateChatDto,
+  ) {
+    return await this.listingService.addChatToListing(
+      id,
+      req['userId'],
+      form.message,
+    );
+  }
+
+  @Get('/:id/chats')
+  @UseGuards(TokenGuard)
+  async GetListingChats(@Req() req: Request, @Param('id') id: string) {
+    return await this.listingService.getListingChats(id);
   }
 }

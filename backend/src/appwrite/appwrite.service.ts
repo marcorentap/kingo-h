@@ -4,6 +4,7 @@ import { Client, Databases, ID, Query, Storage } from 'node-appwrite';
 import { DBUserDto } from './db-user.dto';
 import { DBListingDto } from './db-listing.dto';
 import { CommentDto } from 'src/comments/comment.dto';
+import { ChatDto } from 'src/listings/chat.dto';
 
 @Injectable()
 export class AppwriteService {
@@ -213,6 +214,27 @@ export class AppwriteService {
     return await db.createDocument(this.dbId, 'comments', ID.unique(), {
       user: userId,
       comment: comment,
+    });
+  }
+
+  async createChat(listingId: string, userId: string, message: string) {
+    const db = new Databases(this.client);
+    return await db.createDocument(this.dbId, 'chats', ID.unique(), {
+      listing: listingId,
+      sender: userId,
+      message: message,
+    });
+  }
+
+  async getListingChats(listingId: string) {
+    const db = new Databases(this.client);
+    const docs = await db.listDocuments(this.dbId, 'chats');
+    return docs.documents.map((doc) => {
+      return new ChatDto({
+        listing: doc['listing']['$id'],
+        sender: doc['sender'],
+        message: doc['message'],
+      });
     });
   }
 }

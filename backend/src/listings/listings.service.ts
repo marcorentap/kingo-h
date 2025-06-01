@@ -204,4 +204,12 @@ export class ListingsService {
       commentDoc['$id'],
     );
   }
+
+  async addChatToListing(id: string, userId: string, message: string) {
+    return await this.appwriteService.createChat(id, userId, message);
+  }
+
+  async getListingChats(id: string) {
+    return await this.appwriteService.getListingChats(id);
+  }
 }

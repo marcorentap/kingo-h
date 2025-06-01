@@ -17,7 +17,13 @@ import { getCompletionPictureUrl, getPictureUrl } from "@/lib/appwrite";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User } from "@/lib/User";
 import { Button } from "@/components/ui/button";
-import { LucideChevronLeft, LucideHeart, LucideStar } from "lucide-react";
+import {
+  LucideChevronLeft,
+  LucideHeart,
+  LucideStar,
+  MessageSquare,
+  MessagesSquare,
+} from "lucide-react";
 import { calculateDistance, TimeAgo } from "@/lib/utils";
 import {
   Dialog,
@@ -33,6 +39,7 @@ import { Label } from "@/components/ui/label";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { Textarea } from "@/components/ui/textarea";
 import { Comment } from "@/lib/Comment";
+import Link from "next/link";
 
 interface CommentCardProps {
   comment: Comment;
@@ -344,10 +351,12 @@ export function CompletionButton(props: CompletionButtonProps) {
 }
 
 interface FreelancerCardProps {
+  user: User;
   freelancer: User;
+  listing: ListingDto;
 }
 function FreelancerCard(props: FreelancerCardProps) {
-  const { freelancer } = props;
+  const { freelancer, listing, user } = props;
   return (
     <div className="flex mt-4 w-full">
       <Avatar className="w-10 h-auto">
@@ -361,6 +370,14 @@ function FreelancerCard(props: FreelancerCardProps) {
         <p className="text-sm font-semibold">{freelancer.name}</p>
         <p className="text-xs">male</p>
       </div>
+
+      {listing.lister == user.appwrite["$id"] && (
+        <div className="flex bg-gray-300 rounded-full items-center p-2 cursor-pointer">
+          <Link href={`/listings/${listing.id}/chat`}>
+            <MessagesSquare className="w-5 h-5" />
+          </Link>
+        </div>
+      )}
     </div>
   );
 }
@@ -520,9 +537,17 @@ export default function ListingPageComponent(props: ListingPageComponentProps) {
               <p className="text-sm font-semibold">{lister?.name}</p>
               <p className="text-xs">male</p>
             </div>
+
+            {listing.freelancer == user.appwrite["$id"] && (
+              <div className="flex bg-gray-300 rounded-full items-center p-2 cursor-pointer">
+                <Link href={`/listings/${listing.id}/chat`}>
+                  <MessagesSquare className="w-5 h-5" />
+                </Link>
+              </div>
+            )}
           </div>
 
-          <div className="flex justify-between">
+          <div className="flex justify-between mt-4">
             <p className="text-lg font-semibold">{listing.title}</p>
             <div className="bg-gray-300 p-1.5 rounded-full flex items-center">
               <p className="text-xs font-semibold leading-none">
@@ -550,7 +575,11 @@ export default function ListingPageComponent(props: ListingPageComponentProps) {
           {freelancer && (
             <div className="mt-4">
               <p className="text-lg font-semibold">Freelancer</p>
-              <FreelancerCard freelancer={freelancer} />
+              <FreelancerCard
+                user={user}
+                freelancer={freelancer}
+                listing={listing}
+              />
             </div>
           )}
 
