@@ -64,6 +64,7 @@ export default function ChatPageComponent(props: ChatPageComponentProps) {
     formState: { errors },
     setValue,
     control,
+    reset,
   } = useForm<ChatInputs>();
 
   function appendChat(chat: Chat) {
@@ -154,6 +155,8 @@ export default function ChatPageComponent(props: ChatPageComponentProps) {
       "application/json",
       JSON.stringify(data),
     );
+
+    reset();
   };
 
   return (
