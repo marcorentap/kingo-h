@@ -79,12 +79,57 @@ export class AppwriteService {
     return await db.getDocument(this.dbId, 'listings', id);
   }
 
-  async getListingDocs(limit: number = 25, offset: number = 0) {
+  async getListingDocs(limit: number = 100, offset: number = 0) {
     const db = new Databases(this.client);
     const docs = await db.listDocuments(this.dbId, 'listings', [
       Query.limit(limit),
       Query.offset(offset),
     ]);
+
+    return docs;
+  }
+
+  async getFilteredListingDocs(
+    search?: string,
+    category?: string,
+    maxDistance?: number,
+    status?: string,
+    limit: number = 100,
+    offset: number = 0,
+  ) {
+    const db = new Databases(this.client);
+    let queries: string[] = [Query.limit(limit), Query.offset(offset)];
+
+    search &&
+      queries.push(
+        Query.or([
+          Query.search('title', search),
+          Query.search('description', search),
+        ]),
+      );
+
+    if (status == 'ONGOING') {
+      queries.push(
+        Query.or([
+          Query.equal('status', 'ONGOING'),
+          Query.equal('status', 'AWAITREVIEW'),
+        ]),
+      );
+    } else if (status) {
+      queries.push(Query.equal('status', status));
+    }
+
+    category && queries.push(Query.equal('category', category));
+
+    maxDistance &&
+      queries.push(
+        Query.or([
+          Query.lessThanEqual('longitude', maxDistance),
+          Query.lessThanEqual('latitude', maxDistance),
+        ]),
+      );
+
+    const docs = await db.listDocuments(this.dbId, 'listings', queries);
 
     return docs;
   }

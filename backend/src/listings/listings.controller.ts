@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Post,
+  Query,
   Req,
   UploadedFile,
   UploadedFiles,
@@ -59,8 +60,19 @@ export class ListingsController {
 
   @Get('')
   @UseGuards(TokenGuard)
-  async GetListings(@Req() req: Request) {
-    const listings = await this.listingService.getListings();
+  async GetListings(
+    @Req() req: Request,
+    @Query('search') search: string,
+    @Query('category') category: string,
+    @Query('maxDistance') maxDistance: number,
+    @Query('status') status: string,
+  ) {
+    const listings = await this.listingService.getListings(
+      search,
+      category,
+      Number(maxDistance),
+      status,
+    );
     return listings;
   }
 

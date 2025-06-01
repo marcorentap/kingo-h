@@ -39,7 +39,7 @@ export function ListingCard(props: ListingCardProps) {
           <div className="flex gap-2">
             <p className="text-xs text-gray-500">
               {userLatitude && userLongitude && distanceM > 1000
-                ? (distanceM / 1000).toPrecision(2)
+                ? (distanceM / 1000).toFixed(2)
                 : Math.trunc(distanceM)}
               {distanceM > 1000 ? "km" : "m"}
             </p>

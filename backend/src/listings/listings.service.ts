@@ -143,7 +143,6 @@ export class ListingsService {
     const applicantDtos = await Promise.all(promises);
     return applicantDtos;
   }
-
   async getUserListings(userId: string) {
     const docs = await this.appwriteService.getUserListingDocs(userId);
 
@@ -156,8 +155,23 @@ export class ListingsService {
     return dtos;
   }
 
-  async getListings() {
-    const docs = await this.appwriteService.getListingDocs();
+  async getListings(
+    filterSearch: string | undefined,
+    filterCategory: string | undefined,
+    filterMaxDistance: number | undefined,
+    filterStatus: string | undefined,
+  ) {
+    let docs: Models.DocumentList<Models.Document>;
+    if (filterSearch || filterCategory || filterMaxDistance || filterStatus) {
+      docs = await this.appwriteService.getFilteredListingDocs(
+        filterSearch,
+        filterCategory,
+        filterMaxDistance,
+        filterStatus,
+      );
+    } else {
+      docs = await this.appwriteService.getListingDocs();
+    }
 
     const dtos = await Promise.all(
       docs.documents.map(async (doc) => {

@@ -170,13 +170,12 @@ export default function CreateListingsPage() {
                 </Select>
               )}
             />
-          </div>
-          <div>
+            <div></div>
             Description
             <Textarea
               className="h-32"
-              placeholder="Enter listing description"
               {...register("description")}
+              placeholder="Enter listing description"
             />
           </div>
           <div>
