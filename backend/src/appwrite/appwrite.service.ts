@@ -228,7 +228,9 @@ export class AppwriteService {
 
   async getListingChats(listingId: string) {
     const db = new Databases(this.client);
-    const docs = await db.listDocuments(this.dbId, 'chats');
+    const docs = await db.listDocuments(this.dbId, 'chats', [
+      Query.equal('listing', listingId),
+    ]);
     return docs.documents.map((doc) => {
       return new ChatDto({
         listing: doc['listing']['$id'],
