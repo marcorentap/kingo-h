@@ -4,10 +4,21 @@ import { AppwriteService } from 'src/appwrite/appwrite.service';
 import { DBListingDto } from 'src/appwrite/db-listing.dto';
 import { ListingDto } from './listing.dto';
 import { UserDto } from 'src/users/user.dto';
+import { ReviewDto } from './review.dto';
 
 @Injectable()
 export class ListingsService {
   constructor(readonly appwriteService: AppwriteService) {}
+
+  reviewDocToDto(doc: Models.Document) {
+    return new ReviewDto({
+      id: doc['$id'],
+      reviewer: doc['reviewer'],
+      reviewee: doc['reviewee'],
+      rating: doc['rating'],
+      review: doc['review'],
+    });
+  }
 
   listingDocToDto(doc: Models.Document) {
     return new ListingDto({
@@ -16,7 +27,6 @@ export class ListingsService {
       description: doc['description'],
       pictures: doc['pictures'],
       completion_pictures: doc['completion_pictures'],
-      rating: doc['rating'],
       status: doc['status'],
       lister: doc['lister']['$id'],
       payment: doc['payment'],
@@ -24,6 +34,9 @@ export class ListingsService {
       latitude: doc['latitude'],
       comments: doc['comments'],
       category: doc['category'],
+      reviews: doc['reviews'].map((r) => {
+        return this.reviewDocToDto(r);
+      }),
       applicants: doc['applicants'].map((app) => app['$id']),
       freelancer: doc['freelancer'] ? doc['freelancer']['$id'] : null,
       created_at: new Date(doc['$createdAt']),
@@ -182,7 +195,32 @@ export class ListingsService {
     return dtos;
   }
 
-  async approveCompletion(id: string, userId: string, rating: number) {
+  async rateLister(id: string, userId: string, rating: number, review: string) {
+    const db = new Databases(this.appwriteService.getClient());
+    const doc = await this.appwriteService.getListingDoc(id);
+    if (doc['freelancer']['$id'] != userId) {
+      return HttpStatus.UNAUTHORIZED;
+    }
+
+    if (!rating) {
+      return HttpStatus.BAD_REQUEST;
+    }
+
+    return await this.appwriteService.createReview(
+      id,
+      doc['freelancer']['$id'],
+      doc['lister']['$id'],
+      rating,
+      review,
+    );
+  }
+
+  async approveCompletion(
+    id: string,
+    userId: string,
+    rating: number,
+    review: string,
+  ) {
     const db = new Databases(this.appwriteService.getClient());
     const doc = await this.appwriteService.getListingDoc(id);
     if (doc['lister']['$id'] != userId) {
@@ -191,7 +229,16 @@ export class ListingsService {
     if (!rating) {
       return HttpStatus.BAD_REQUEST;
     }
-    return this.appwriteService.markListingApproved(id, rating);
+
+    await this.appwriteService.createReview(
+      id,
+      doc['lister']['$id'],
+      doc['freelancer']['$id'],
+      rating,
+      review,
+    );
+
+    return this.appwriteService.markListingApproved(id);
   }
 
   async addCommentToListing(id: string, userId: string, comment: string) {

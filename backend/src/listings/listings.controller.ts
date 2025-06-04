@@ -117,6 +117,21 @@ export class ListingsController {
       form.freelancerId,
     );
   }
+
+  @Post('/:id/rate_lister')
+  @UseGuards(TokenGuard)
+  async RateLister(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() form: ApproveCompletionDto,
+  ) {
+    return await this.listingService.rateLister(
+      id,
+      req['userId'],
+      form.rating,
+      form.review,
+    );
+  }
   @Post('/:id/approve')
   @UseGuards(TokenGuard)
   async ApproveListingCompletion(
@@ -128,6 +143,7 @@ export class ListingsController {
       id,
       req['userId'],
       form.rating,
+      form.review,
     );
   }
 

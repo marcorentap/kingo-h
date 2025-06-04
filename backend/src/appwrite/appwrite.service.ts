@@ -190,11 +190,27 @@ export class AppwriteService {
     });
   }
 
-  async markListingApproved(id: string, rating: number) {
+  async markListingApproved(id: string) {
     const db = new Databases(this.client);
     return await db.updateDocument(this.dbId, 'listings', id, {
       status: 'COMPLETED',
+    });
+  }
+
+  async createReview(
+    listingId: string,
+    reviewer: string,
+    reviewee: string,
+    rating: number,
+    review: string,
+  ) {
+    const db = new Databases(this.client);
+    return await db.createDocument(this.dbId, 'reviews', ID.unique(), {
+      listing: listingId,
+      reviewer: reviewer,
+      reviewee: reviewee,
       rating: Number(rating),
+      review: review,
     });
   }
 

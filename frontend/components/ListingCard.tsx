@@ -54,10 +54,30 @@ export function ListingCard(props: ListingCardProps) {
           </div>
         </div>
         <div className="flex justify-between items-center">
-          <div className="bg-gray-300 p-1.5 rounded-full">
-            <p className="text-xs font-semibold leading-none">
-              {listing.category}
-            </p>
+          <div className="flex gap-1">
+            <div className="bg-gray-300 p-1.5 rounded-full">
+              <p className="text-xs font-semibold leading-none">
+                {listing.category}
+              </p>
+            </div>
+            {listing.status == "LISTED" && (
+              <div className="bg-gray-300 p-1.5 rounded-full">
+                <p className="text-xs font-semibold leading-none">Listed</p>
+              </div>
+            )}
+            {(listing.status == "INPROGRESS" ||
+              listing.status == "AWAITREVIEW") && (
+              <div className="bg-gray-300 p-1.5 rounded-full">
+                <p className="text-xs font-semibold leading-none">
+                  In progress
+                </p>
+              </div>
+            )}
+            {listing.status == "COMPLETED" && (
+              <div className="bg-gray-300 p-1.5 rounded-full">
+                <p className="text-xs font-semibold leading-none">Completed</p>
+              </div>
+            )}
           </div>
           <div className="flex items-center">
             <p className="text-xs mr-1 font-semibold leading-none">

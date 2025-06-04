@@ -1,9 +1,12 @@
+import { Review } from "./Review";
+
 export class ListingDto {
   readonly id: string;
   readonly title: string;
   readonly description: string;
   readonly pictures: string[];
   readonly completion_pictures: string[];
+  readonly reviews: Review[];
   readonly status: "LISTED" | "INPROGRESS" | "AWAITREVIEW" | "COMPLETED" =
     "LISTED";
   readonly lister: string;

@@ -223,14 +223,82 @@ function ApplicantCard(props: ApplicantCardProps) {
   );
 }
 
+type RateListerInputs = {
+  rating: number;
+  review: string;
+};
+
+interface RateListerProps {
+  listing: ListingDto;
+}
+
+export function ReviewListerButton(props: RateListerProps) {
+  const { listing } = props;
+  const { watch, register, handleSubmit } = useForm<RateListerInputs>();
+  const onSubmit: SubmitHandler<RateListerInputs> = async (data) => {
+    const res = await backendFetch(
+      "/listings/" + listing.id + "/rate_lister",
+      "POST",
+      "application/json",
+      JSON.stringify(data),
+    );
+    if (res.ok) {
+      window.location.href = "/listings/" + listing.id;
+    }
+  };
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button className="bg-green-700">Rate Lister</Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Rate Lister</DialogTitle>
+          <DialogDescription>Rate the lister</DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <div className="grid gap-5">
+            <div className="flex justify-center gap-2">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <label key={star} className="cursor-pointer">
+                  <input
+                    type="radio"
+                    value={star}
+                    {...register("rating", { required: true })}
+                    className="hidden"
+                  />
+                  <LucideStar
+                    className="w-8 h-8"
+                    stroke="currentColor"
+                    fill={watch("rating") >= star ? "currentColor" : "none"}
+                  />
+                </label>
+              ))}
+            </div>
+
+            <Textarea {...register("review")} />
+          </div>
+
+          <Button
+            type="submit"
+            className="mt-4 text-xs bg-green-700 w-full h-12"
+          >
+            Submit
+          </Button>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 type ApproveInputs = {
   rating: number;
+  review: string;
 };
 
 interface ApproveButtonProps {
   listing: ListingDto;
 }
-
 export function ApproveButton(props: ApproveButtonProps) {
   const { listing } = props;
   const { watch, register, handleSubmit } = useForm<ApproveInputs>();
@@ -274,6 +342,8 @@ export function ApproveButton(props: ApproveButtonProps) {
                 </label>
               ))}
             </div>
+
+            <Textarea {...register("review")} />
           </div>
 
           <Button
@@ -424,6 +494,7 @@ export default function ListingPageComponent(props: ListingPageComponentProps) {
       );
       const listingJson = await listingRes.json();
       const listing: ListingDto = listingJson as ListingDto;
+      console.log(listing);
       setListing(listing);
 
       let pics = listing.pictures?.map((pic) => {
@@ -674,9 +745,29 @@ export default function ListingPageComponent(props: ListingPageComponentProps) {
                 <ApproveButton listing={listing} />
               )}
 
-            {listing.status == "COMPLETED" && (
-              <p className="text-green-700 font-bold">COMPLETED</p>
-            )}
+            {listing.status == "COMPLETED" &&
+              listing.lister == user.appwrite["$id"] && (
+                <p className="text-green-700 font-bold">COMPLETED</p>
+              )}
+
+            {listing.status == "COMPLETED" &&
+              listing.freelancer == user.appwrite["$id"] &&
+              !listing.reviews
+                .map((r) => {
+                  return r.reviewer;
+                })
+                .includes(user.appwrite["$id"]) && (
+                <ReviewListerButton listing={listing} />
+              )}
+            {listing.status == "COMPLETED" &&
+              listing.freelancer == user.appwrite["$id"] &&
+              listing.reviews
+                .map((r) => {
+                  return r.reviewer;
+                })
+                .includes(user.appwrite["$id"]) && (
+                <p className="text-green-700 font-bold">COMPLETED</p>
+              )}
           </div>
         </div>
       </div>
