@@ -28,7 +28,7 @@ export class ListingsService {
       pictures: doc['pictures'],
       completion_pictures: doc['completion_pictures'],
       status: doc['status'],
-      lister: doc['lister']['$id'],
+      lister: doc['lister'],
       payment: doc['payment'],
       longitude: doc['longitude'],
       latitude: doc['latitude'],
@@ -37,8 +37,8 @@ export class ListingsService {
       reviews: doc['reviews'].map((r) => {
         return this.reviewDocToDto(r);
       }),
-      applicants: doc['applicants'].map((app) => app['$id']),
-      freelancer: doc['freelancer'] ? doc['freelancer']['$id'] : null,
+      applicants: doc['applicants'],
+      freelancer: doc['freelancer'],
       created_at: new Date(doc['$createdAt']),
     });
   }
@@ -91,7 +91,7 @@ export class ListingsService {
   async selectFreelancer(id: string, userId: string, freelancerId: string) {
     const db = new Databases(this.appwriteService.getClient());
     const doc = await this.appwriteService.getListingDoc(id);
-    if (doc['lister']['$id'] != userId) {
+    if (doc['lister'] != userId) {
       return HttpStatus.UNAUTHORIZED;
     }
 
@@ -114,7 +114,7 @@ export class ListingsService {
   ) {
     const db = new Databases(this.appwriteService.getClient());
     const doc = await this.appwriteService.getListingDoc(id);
-    if (doc['freelancer']['$id'] != freelancerId) {
+    if (doc['freelancer'] != freelancerId) {
       return HttpStatus.UNAUTHORIZED;
     }
     if (!freelancerId) {
@@ -140,7 +140,7 @@ export class ListingsService {
     const applicantNames = {};
 
     const promises = dbApplicants.map(async (app) => {
-      const applicantId = app['$id'];
+      const applicantId = app;
       if (!applicantNames[applicantId]) {
         const authApplicants = await users.get(applicantId);
         applicantNames[applicantId] = authApplicants.name;
@@ -198,7 +198,7 @@ export class ListingsService {
   async rateLister(id: string, userId: string, rating: number, review: string) {
     const db = new Databases(this.appwriteService.getClient());
     const doc = await this.appwriteService.getListingDoc(id);
-    if (doc['freelancer']['$id'] != userId) {
+    if (doc['freelancer'] != userId) {
       return HttpStatus.UNAUTHORIZED;
     }
 
@@ -208,8 +208,8 @@ export class ListingsService {
 
     return await this.appwriteService.createReview(
       id,
-      doc['freelancer']['$id'],
-      doc['lister']['$id'],
+      doc['freelancer'],
+      doc['lister'],
       rating,
       review,
     );
@@ -223,7 +223,7 @@ export class ListingsService {
   ) {
     const db = new Databases(this.appwriteService.getClient());
     const doc = await this.appwriteService.getListingDoc(id);
-    if (doc['lister']['$id'] != userId) {
+    if (doc['lister'] != userId) {
       return HttpStatus.UNAUTHORIZED;
     }
     if (!rating) {
@@ -232,8 +232,8 @@ export class ListingsService {
 
     await this.appwriteService.createReview(
       id,
-      doc['lister']['$id'],
-      doc['freelancer']['$id'],
+      doc['lister'],
+      doc['freelancer'],
       rating,
       review,
     );

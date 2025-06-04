@@ -150,7 +150,12 @@ export class AppwriteService {
   async getUserListingDocs(userId: string, limit?: number, offset?: number) {
     const db = new Databases(this.client);
 
-    const queries = [Query.equal('lister', userId)];
+    const queries = [
+      Query.or([
+        Query.equal('lister', userId),
+        Query.contains('applicants', [userId]),
+      ]),
+    ];
 
     if (limit !== undefined) {
       queries.push(Query.limit(limit));
