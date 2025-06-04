@@ -147,6 +147,15 @@ export class AppwriteService {
     });
   }
 
+  async getUserRatings(userId: string) {
+    const db = new Databases(this.client);
+    const queries = [Query.equal('reviewee', userId)];
+
+    const docs = await db.listDocuments(this.dbId, 'reviews', queries);
+
+    return docs;
+  }
+
   async getUserListingDocs(userId: string, limit?: number, offset?: number) {
     const db = new Databases(this.client);
 

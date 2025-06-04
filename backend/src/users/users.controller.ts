@@ -15,10 +15,17 @@ import { DBUserDto } from 'src/appwrite/db-user.dto';
 @Controller('users')
 export class UsersController {
   constructor(readonly usersService: UsersService) {}
+
   @UseGuards(TokenGuard)
   @Get('/me')
   GetMe(@Req() req: Request) {
     return this.usersService.getUser(req['userId']);
+  }
+
+  @UseGuards(TokenGuard)
+  @Get('/me/ratings')
+  GetMeRatings(@Req() req: Request) {
+    return this.usersService.getUserRatings(req['userId']);
   }
 
   @Get(':id')

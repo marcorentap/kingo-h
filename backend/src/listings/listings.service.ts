@@ -168,6 +168,13 @@ export class ListingsService {
     return dtos;
   }
 
+  async getUserRatings(userId: string) {
+    const docs = await this.appwriteService.getUserRatings(userId);
+    return docs.documents.map((r) => {
+      return this.reviewDocToDto(r);
+    });
+  }
+
   async getListings(
     filterSearch: string | undefined,
     filterCategory: string | undefined,

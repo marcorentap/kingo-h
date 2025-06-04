@@ -9,6 +9,7 @@ import {
   LucideHome,
   LucideMessageSquare,
   LucideSearch,
+  LucideStar,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -17,6 +18,49 @@ import { ListingDto } from "@/lib/Listing";
 import { getPictureUrl } from "@/lib/appwrite";
 import { ListingCard } from "@/components/ListingCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Review } from "@/lib/Review";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+
+interface ReviewCarouselProps {
+  reviews: Review[];
+}
+
+function ReviewCarousel(props: ReviewCarouselProps) {
+  const { reviews } = props;
+  return (
+    <Carousel className="w-full">
+      <CarouselContent>
+        {reviews.map((rev, index) => (
+          <CarouselItem key={index}>
+            <div className="flex flex-col justify-between h-full text-center px-4">
+              <blockquote className="italic mb-4">"{rev.review}"</blockquote>
+              <div className="flex justify-center mt-auto mb-4">
+                {Array.from({ length: 5 }, (_, i) => i < rev.rating).map(
+                  (filled, i) => (
+                    <LucideStar
+                      key={i}
+                      className="w-3 h-3 mx-0.5"
+                      fill={filled ? "currentColor" : "none"}
+                      stroke="currentColor"
+                    />
+                  ),
+                )}
+              </div>
+            </div>
+          </CarouselItem>
+        ))}
+      </CarouselContent>
+      <CarouselPrevious />
+      <CarouselNext />
+    </Carousel>
+  );
+}
 
 export default function ProfilePage() {
   const { user, loading } = useContext(UserContext);
@@ -36,6 +80,9 @@ export default function ProfilePage() {
   const [listedToReview, setListedToReview] = useState<ListingDto[]>([]);
   const [listedToComplete, setListedToComplete] = useState<ListingDto[]>([]);
   const [listedNotStarted, setListedNotStarted] = useState<ListingDto[]>([]);
+
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [rating, setRating] = useState<number>(0);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -145,6 +192,24 @@ export default function ProfilePage() {
           console.log(e);
         },
       );
+
+      const ratingRes = await backendFetch(
+        "/users/me/ratings",
+        "GET",
+        "application/json",
+      );
+      const reviews = (await ratingRes.json()) as Review[];
+      setReviews(reviews);
+      console.log(reviews);
+
+      const ratingsNum = reviews.map((r) => {
+        return r.rating;
+      });
+      const averageRating =
+        ratingsNum.length > 0
+          ? ratingsNum.reduce((sum, val) => sum + val, 0) / ratingsNum.length
+          : 0;
+      setRating(averageRating);
     })();
   }, [user, loading]);
 
@@ -171,6 +236,26 @@ export default function ProfilePage() {
           Upload Image
         </p>
         <p className="text-2xl text-center mx-auto mt-2">{user?.name}</p>
+
+        <div className="flex justify-center items-center mt-1 mb-4">
+          {Array.from({ length: 5 }, (_, i) => i < rating).map(
+            (filled, index) => (
+              <LucideStar
+                key={index}
+                className="w-4 h-4 mx-0.5"
+                fill={filled ? "currentColor" : "none"}
+                stroke="currentColor"
+              />
+            ),
+          )}
+        </div>
+
+        {reviews.length > 0 && (
+          <div className="my-4">
+            <p className="text-center text-xl">Reviews</p>
+            <ReviewCarousel reviews={reviews} />
+          </div>
+        )}
       </div>
 
       <Tabs defaultValue="ongoing">
