@@ -30,6 +30,7 @@ export class UsersService {
       name: authUser.name,
       campus: dbUser.campus,
       profile_picture: dbUser.profile_picture,
+      appwrite: authUser,
     });
   }
 

@@ -63,19 +63,21 @@ function CommentCard(props: CommentCardProps) {
   }, []);
 
   return (
-    <div className="flex mt-4 w-full">
-      <Avatar className="w-10 h-10">
+    <Link href={"/profile/" + user?.appwrite.$id}>
+      <Avatar className="flex mt-4 w-full">
         <AvatarImage src={user?.profile_picture} />
-        <AvatarFallback>
-          <img src="/default_avatar.png" />
-        </AvatarFallback>
-      </Avatar>
+        <Avatar className="w-10 h-10">
+          <AvatarFallback>
+            <img src="/default_avatar.png" />
+          </AvatarFallback>
+        </Avatar>
 
-      <div className="ml-2 w-full">
-        <p className="text-sm font-semibold">{user?.name}</p>
-        <p className="whitespace-pre-wrap">{comment.comment}</p>
-      </div>
-    </div>
+        <div className="ml-2 w-full">
+          <p className="text-sm font-semibold">{user?.name}</p>
+          <p className="whitespace-pre-wrap">{comment.comment}</p>
+        </div>
+      </Avatar>
+    </Link>
   );
 }
 
@@ -197,17 +199,21 @@ function ApplicantCard(props: ApplicantCardProps) {
   }
   return (
     <div className="flex mt-4 w-full">
-      <Avatar className="w-10 h-auto">
-        <AvatarImage src={applicant.profile_picture} />
-        <AvatarFallback>
-          <img src="/default_avatar.png" />
-        </AvatarFallback>
-      </Avatar>
+      <Link href={"/profile/" + applicant?.appwrite.$id}>
+        <Avatar className="w-10 h-auto">
+          <AvatarImage src={applicant.profile_picture} />
+          <AvatarFallback>
+            <img src="/default_avatar.png" />
+          </AvatarFallback>
+        </Avatar>
+      </Link>
 
-      <div className="ml-2 w-full">
-        <p className="text-sm font-semibold">{applicant.name}</p>
-        <p className="text-xs">male</p>
-      </div>
+      <Link href={"/profile/" + applicant?.appwrite.$id}>
+        <div className="ml-2 w-full">
+          <p className="text-sm font-semibold">{applicant.name}</p>
+          <p className="text-xs">male</p>
+        </div>
+      </Link>
 
       {!disabled && (
         <Button
@@ -429,16 +435,20 @@ function FreelancerCard(props: FreelancerCardProps) {
   const { freelancer, listing, user } = props;
   return (
     <div className="flex mt-4 w-full">
-      <Avatar className="w-10 h-auto">
-        <AvatarImage src={freelancer.profile_picture} />
-        <AvatarFallback>
-          <img src="/default_avatar.png" />
-        </AvatarFallback>
-      </Avatar>
+      <Link href={"/profile/" + freelancer.appwrite.$id}>
+        <Avatar className="w-10 h-auto">
+          <AvatarImage src={freelancer.profile_picture} />
+          <AvatarFallback>
+            <img src="/default_avatar.png" />
+          </AvatarFallback>
+        </Avatar>
+      </Link>
 
       <div className="ml-2 w-full">
-        <p className="text-sm font-semibold">{freelancer.name}</p>
-        <p className="text-xs">male</p>
+        <Link href={"/profile/" + freelancer.appwrite.$id}>
+          <p className="text-sm font-semibold">{freelancer.name}</p>
+          <p className="text-xs">male</p>
+        </Link>
       </div>
 
       {listing.lister == user.appwrite["$id"] && (
@@ -517,7 +527,7 @@ export default function ListingPageComponent(props: ListingPageComponentProps) {
       const listerJson = await listerRes.json();
       setLister(listerJson as User);
 
-      if (listing.lister == user.appwrite["$id"]) {
+      if (listing.lister == user?.appwrite["$id"]) {
         const applicantsRes = await backendFetch(
           "/listings/" + id + "/applicants",
           "GET",
@@ -597,16 +607,20 @@ export default function ListingPageComponent(props: ListingPageComponentProps) {
           <PicturesCarousel pictures={pictures!} />
 
           <div className="flex mt-4 w-full">
-            <Avatar className="w-10 h-auto">
-              <AvatarImage src={lister?.profile_picture} />
-              <AvatarFallback>
-                <img src="/default_avatar.png" />
-              </AvatarFallback>
-            </Avatar>
+            <Link href={"/profile/" + lister?.appwrite.$id}>
+              <Avatar className="w-10 h-auto">
+                <AvatarImage src={lister?.profile_picture} />
+                <AvatarFallback>
+                  <img src="/default_avatar.png" />
+                </AvatarFallback>
+              </Avatar>
+            </Link>
 
             <div className="ml-2 w-full">
-              <p className="text-sm font-semibold">{lister?.name}</p>
-              <p className="text-xs">male</p>
+              <Link href={"/profile/" + lister?.appwrite.$id}>
+                <p className="text-sm font-semibold">{lister?.name}</p>
+                <p className="text-xs">male</p>
+              </Link>
             </div>
 
             {listing.freelancer == user.appwrite["$id"] && (

@@ -28,6 +28,12 @@ export class UsersController {
     return this.usersService.getUserRatings(req['userId']);
   }
 
+  @Get(':id/ratings')
+  @UseGuards(TokenGuard)
+  GetUserRatings(@Req() req: Request, @Param('id') id: string) {
+    return this.usersService.getUserRatings(id);
+  }
+
   @Get(':id')
   @UseGuards(TokenGuard)
   GetUser(@Req() req: Request, @Param('id') id: string) {

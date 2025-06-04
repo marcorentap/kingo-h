@@ -56,8 +56,8 @@ function ReviewCarousel(props: ReviewCarouselProps) {
           </CarouselItem>
         ))}
       </CarouselContent>
-      <CarouselPrevious />
-      <CarouselNext />
+      <CarouselPrevious className="translate-x-16" />
+      <CarouselNext className="-translate-x-16" />
     </Carousel>
   );
 }

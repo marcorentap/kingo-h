@@ -138,18 +138,21 @@ export class ListingsService {
     const users = new Users(client);
     const dbApplicants = doc['applicants'];
     const applicantNames = {};
+    const applicantAuths = {};
 
     const promises = dbApplicants.map(async (app) => {
       const applicantId = app;
-      if (!applicantNames[applicantId]) {
+      if (!applicantNames[applicantId] || !applicantAuths[applicantId]) {
         const authApplicants = await users.get(applicantId);
         applicantNames[applicantId] = authApplicants.name;
+        applicantAuths[applicantId] = authApplicants;
       }
 
       return new UserDto({
         name: applicantNames[applicantId],
         campus: app.campus,
         profile_picture: app.profile_picture,
+        appwrite: applicantAuths[applicantId],
       });
     });
 
@@ -166,13 +169,6 @@ export class ListingsService {
     );
 
     return dtos;
-  }
-
-  async getUserRatings(userId: string) {
-    const docs = await this.appwriteService.getUserRatings(userId);
-    return docs.documents.map((r) => {
-      return this.reviewDocToDto(r);
-    });
   }
 
   async getListings(
