@@ -64,9 +64,9 @@ function CommentCard(props: CommentCardProps) {
 
   return (
     <Link href={"/profile/" + user?.appwrite.$id}>
-      <Avatar className="flex mt-4 w-full">
-        <AvatarImage src={user?.profile_picture} />
+      <div className="flex mt-4 mb-4 w-full">
         <Avatar className="w-10 h-10">
+          <AvatarImage src={user?.profile_picture} />
           <AvatarFallback>
             <img src="/default_avatar.png" />
           </AvatarFallback>
@@ -76,7 +76,7 @@ function CommentCard(props: CommentCardProps) {
           <p className="text-sm font-semibold">{user?.name}</p>
           <p className="whitespace-pre-wrap">{comment.comment}</p>
         </div>
-      </Avatar>
+      </div>
     </Link>
   );
 }
